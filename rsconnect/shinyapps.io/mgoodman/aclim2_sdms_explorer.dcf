@@ -1,0 +1,11 @@
+name: aclim2_sdms_explorer
+title:
+username:
+account: mgoodman
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 8549006
+bundleId: 6962704
+url: https://mgoodman.shinyapps.io/aclim2_sdms_explorer/
+when: 1678907590.38467
+lastSyncTime: 1678907590.38468
