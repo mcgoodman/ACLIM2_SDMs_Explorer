@@ -1,4 +1,5 @@
 
+
 require("shiny")
 require("here")
 require("dplyr")
@@ -12,9 +13,10 @@ species1 <- unique(overlap$species1)
 species2 <- unique(overlap$species2)
 sims <- unique(overlap$sim)
 
-## Overlap indices
-indices <- c("Local index of collocation", "Bhattacharyya's coefficient", "Global index of collocation")
+## Colors for plots
+sim_cols <- c("black", PNWColors::pnw_palette("Bay", length(sims[sims != "hindcast"])))
 
+## Global plot theme settings
 theme_set(
   theme_bw() + 
     theme(
@@ -26,11 +28,47 @@ theme_set(
   
 )
 
+## Function to plot spatial overlap
+plot_overlap <- function(data, overlap_index, ylab, plot_sims) {
+  
+  data <- data |> filter(index == overlap_index)
+  
+  data |> 
+    ggplot(aes(year, mean)) + 
+    geom_ribbon(aes(ymin = X2.5., ymax = X97.5., fill = sim), alpha = 0.5) + 
+    geom_line(aes(color = sim)) + 
+    annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
+    annotate("segment", x = 2020, y = min(data[["X2.5."]]), 
+             xend = 2035, yend = min(data[["X2.5."]]),
+             arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+    annotate("segment", x = 2018, y = min(data[["X2.5."]]), 
+             xend = 2003, yend = min(data[["X2.5."]]),
+             arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+    annotate("text", x = 2018, y = min(data[["X2.5."]]) + 0.025 * (max(data[["X2.5."]]) - min(data[["X2.5."]])), 
+             label = "hindcast", hjust = 1, vjust = 0, size = 5) +
+    annotate("text", x = 2020, y = min(data[["X2.5."]]) + 0.025 * (max(data[["X2.5."]]) - min(data[["X2.5."]])),
+             label = "forecast", hjust = 0, vjust = 0, size = 5) +
+    scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
+    scale_color_manual(values = sim_cols[which(sims %in% plot_sims)]) + 
+    scale_fill_manual(values = sim_cols[which(sims %in% plot_sims)]) +
+    labs(y = ylab)
+  
+}
+
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   
   # Application title
   titlePanel("ACLIM2 SDMs: Species range and overlap forecasts"),
+  
+  # Left align LaTeX math
+  tags$head(
+    tags$style(HTML("
+                    div.MathJax_Display{
+                    text-align: left !important;
+                    }
+  "))
+  ),
   
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
@@ -39,24 +77,24 @@ ui <- fluidPage(
         inputId = "sp1", 
         label = "Species 1", 
         choices = species1, 
-        selected = species1[1]
+        selected = "arrowtooth flounder"
       ), 
       selectInput(
         inputId = "sp2", 
         label = "Species 2",
         choices = species1,
-        selected = species1[1]
+        selected = "walleye pollock"
       ),
       uiOutput("bin1"), 
       uiOutput("bin2"),
-      selectInput(
+      radioButtons(
         inputId = "index", 
-        label = "Overlap Index", 
-        choices = indices
+        label = "Overlap Indices from:", 
+        choices = c("Estimated biomass", "Probability of occurrence")
       ), 
       checkboxGroupInput(
         inputId = "sim", 
-        label = "Plot series", 
+        label = "Climate models", 
         choices = sims,
         selected = sims
       )
@@ -79,32 +117,34 @@ ui <- fluidPage(
             "'all' for the size bin. Overlap projections are plotted below, with model summaries and range",
             "projections for individual species available in tabs to the right."
           )),
-          plotOutput("overlap_plot")), 
-          h3("Overlap metrics:"),
           p(paste(
-            "The available overlap metrics are as follows. Each varies between 0 and 1, with 0", 
-            "indicating no overlap and 1 indicating complete overlap, and each is",
-            "invariant under linear transformation, i.e., impacted only by the relative biomass",
-            "distributions of each species, not by the aggregate sum biomass in a given year."
+            "Overlap metrics can be computed from either probability of occurrence, in which case only the Binomial",
+            "component of each delta model is used, or expected biomass (i.e., the product of the expected",
+            "values from the Binomial and Lognormal model component). Fit is generally much better for the Binomial",
+            "component (i.e., the models tend to do a better job describing the distribution of encounters / non-encounters",
+            "for each species than they do for species biomass distributions), so overlap estimates based on",
+            "probability of occurrence only may be more reliable, possibly at the cost of ecological interpetability."
           )),
-          h4("Local Index of Collocation"),
-          p(paste(
-            "The local index of collocation is (loosely) a relative metric of interspecies encounter, which",
-            "measures co-occurrence as a non-centered correlation among estimated species biomass:"
-          )),
-          withMathJax("$$\\frac{\\sum p_xp_y}{\\sum p_x^2 \\sum p_y^2}$$"),
+          h2("Spatial overlap"),
+          p(textOutput("overlap_background")),
+          h4(textOutput("overlap_title1")),
+          uiOutput("overlap_math1"),
+          p(textOutput("overlap_description1")),
+          plotOutput("overlap_plot1")),
           h4("Bhattacharyya's coefficient"),
+          withMathJax("$$\\sum \\sqrt{p_x p_y}$$"),
           p(paste(
             "Bhattacharyya's coefficient is a metric of similarity in the fine-scale spatial distributions",
             "of two species:"
           )),
-          withMathJax("$$\\sum \\sqrt{p_x p_y}$$"),
+          plotOutput("overlap_plot2"),
           h4("Global index of collocation"),
+          withMathJax("$$\\frac{1 - \\Delta CG_{x, y}^2}{\\Delta CG_{x,y}^2 + I_x + I_y}$$"), 
           p(paste(
             "The global index of collocation is a measure of broad-scale geographic similarity in two species",
             "distributions, as a function of each species center of gravity (CG) and dispersion (I):"
           )),
-          withMathJax("$$\\frac{1 - \\Delta CG_{x, y}^2}{\\Delta CG_{x,y}^2 + I_x + I_y}$$"), 
+          plotOutput("overlap_plot3"),
           p("(Overlap formulas and definitions following Carroll et al. (2019).")
         ), 
         tabPanel("Species 1", fluidPage(
@@ -142,7 +182,7 @@ ui <- fluidPage(
           h2("Selected models"),
           p(paste(
             "Models included two components - a binomial component to fit presence/absence data and",
-            "with which to project probability of occurrence / habitat suitability, and a gamma component",
+            "with which to project probability of occurrence / habitat suitability, and a lognormal component",
             "fit to biomass values greater than zero. Covariates were selected separately for each component.",
             "Projections are based on total estimated biomass, i.e., the product of estimated probability of",
             "occurrence and estimated positive biomass. The best-fit model according to time-series cross validation",
@@ -153,7 +193,10 @@ ui <- fluidPage(
           h3("Range characteristics"),
           p(paste(
             "Plots of the latitudinal and longitudinal components of the range centroid, as well as the area of",
-            "the eastern & northern Bering Sea shelf occupied, with 95% credible intervals:"
+            "the eastern & northern Bering Sea shelf occupied, with standard error bands or 95% credible intervals.",
+            "Empirical means computed directly from the survey data are shown in light purple, along with means",
+            "computed from the model estimates only for the survey locations sampled in each respective year in", 
+            "dark purple."
           )),
           plotOutput("sp2_northings"), 
           plotOutput("sp2_eastings"),
@@ -164,7 +207,7 @@ ui <- fluidPage(
             "comparing each year's environmental conditions with the multivariate mean and covariance",
             "of the biophyiscal state of the bering sea during years in the observed data, based on the",
             "hindcast. The variables used to guage environmental novelty are those in the best-fit models",
-            "and are therefore different for the binomial and gamma components:"
+            "and are therefore different for the binomial and lognormal components:"
           )),
           plotOutput("sp2_novelty_binom"),
           plotOutput("sp2_novelty_gamma")
@@ -212,51 +255,95 @@ server <- function(input, output) {
     
   )
   
-  get_index <- reactive(
-    case_when(
-      input$index == "Local index of collocation" ~ "loc_colloc", 
-      input$index == "Bhattacharyya's coefficient" ~ "bhattacharyya", 
-      input$index == "Global index of collocation" ~ "gbl_colloc"
-    )
-  )
-  
   plot_data <- reactive(
     overlap |> 
       filter(
         species1 == input$sp1 &
           species2 == input$sp2 &
           bin1 == input$bin1 & 
-          bin2 == input$bin2 & 
-          index == get_index() & 
+          bin2 == input$bin2 &
           sim %in% input$sim
       )
   )
   
-  output$overlap_plot <- renderPlot({
-    
-    plot_data() |> 
-      ggplot(aes(year, mean)) + 
-      geom_ribbon(aes(ymin = X2.5., ymax = X97.5., fill = sim), alpha = 0.5) + 
-      geom_line(aes(color = sim)) + 
-      annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
-      annotate("segment", x = 2020, y = min(plot_data()[["X2.5."]]), 
-               xend = 2035, yend = min(plot_data()[["X2.5."]]),
-               arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
-      annotate("segment", x = 2018, y = min(plot_data()[["X2.5."]]), 
-               xend = 2003, yend = min(plot_data()[["X2.5."]]),
-               arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
-      annotate("text", x = 2018, y = min(plot_data()[["X2.5."]]) + 0.025 * (max(plot_data()[["X2.5."]]) - min(plot_data()[["X2.5."]])), 
-               label = "hindcast", hjust = 1, vjust = 0, size = 5) +
-      annotate("text", x = 2020, y = min(plot_data()[["X2.5."]]) + 0.025 * (max(plot_data()[["X2.5."]]) - min(plot_data()[["X2.5."]])),
-               label = "forecast", hjust = 0, vjust = 0, size = 5) +
-      scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
-      labs(
-        y = input$index, 
-        title = "Spatial overlap",
-        subtitle = "Shaded area corresponds to years with observed groundfish and crab survey data"
+  output$overlap_background <- reactive(
+    if(input$index == "Probability of occurrence") {
+      paste(
+        "Each of the below overlap metrics varies between 0 and 1, with 0", 
+        "indicating no overlap and 1 indicating complete overlap.",
+        "The years containing groundfish survey data (1982-2019) are shaded."
       )
+    } else {
+      paste(
+        "Each of the below overlap metrics varies between 0 and 1, with 0", 
+        "indicating no overlap and 1 indicating complete overlap, and each is",
+        "invariant under linear transformation, i.e., impacted only by the relative biomass",
+        "distributions of each species, not by the aggregate sum biomass in a given year.",
+        "The years containing groundfish survey data (1982-2019) are shaded."
+      )
+    }
+  )
+  
+  output$overlap_title1 <- reactive(
+    if(input$index == "Probability of occurrence") {
+      "Area overlap"
+    } else {
+      "Local index of collocation"
+    }
+  )
+  
+  output$overlap_description1 <- reactive(
+    if(input$index == "Probability of occurrence") {
+      paste(
+        "Area overlap is a simple measure of the proportion of the Eastern Bering Sea (EBS + NBS)",
+        "survey region that we expect both species to occur together, i.e., for which the estimated",
+        "probability of occurrence is greater than 0.5."
+      )
+    } else {
+      paste(
+        "The local index of collocation is (loosely) a relative metric of interspecies encounter, which",
+        "measures co-occurrence as a non-centered correlation among estimated species biomass:"
+      )
+    }
+  )
+  
+  output$overlap_math1 <- renderUI(
+    if(input$index == "Probability of occurrence") {
+      withMathJax("$$A_{x, y} / A_{\\text{total}}$$")
+    } else {
+      withMathJax("$$\\frac{\\sum p_xp_y}{\\sum p_x^2 \\sum p_y^2}$$")
+    }
+  )
+  
+  output$overlap_plot1 <- renderPlot(
     
-  })
+    if (input$index == "Probability of occurrence") {
+      plot_overlap(plot_data(), "area_overlap", "area overlap", input$sim)
+    } else {
+      plot_overlap(plot_data(), "loc_colloc", "local index of collocation", input$sim)
+    }
+    
+  )
+  
+  output$overlap_plot2 <- renderPlot(
+    
+    if (input$index == "Probability of occurrence") {
+      plot_overlap(plot_data(), "bhattacharyya_encounter", "Bhattacharyya's coefficient", input$sim)
+    } else {
+      plot_overlap(plot_data(), "bhattacharyya", "Bhattacharyya's coefficient", input$sim)
+    }
+    
+  )
+  
+  output$overlap_plot3 <- renderPlot(
+    
+    if (input$index == "Probability of occurrence") {
+      plot_overlap(plot_data(), "gbl_colloc_encounter", "global index of collocation", input$sim)
+    } else {
+      plot_overlap(plot_data(), "gbl_colloc", "global index of collocation", input$sim)
+    }
+    
+  )
   
   # Directories containing output for each species
   sp1_dir <- reactive(paste0("output/", gsub(" ", "_", input$sp1), ifelse(input$bin1 == "all", "", paste0("-", input$bin1))))
@@ -292,13 +379,14 @@ server <- function(input, output) {
       geom_ribbon(aes(ymin = northings_mean - northings_sd, ymax = northings_mean + northings_sd, fill = sim), 
                   alpha = 0.5) + 
       geom_line(aes(color = sim)) + 
-      geom_line(aes(year, centroid_northings), data = sp1_empirical(), inherit.aes = FALSE, alpha = 0.5) +
-      geom_point(aes(year, centroid_northings), data = sp1_empirical(), inherit.aes = FALSE, alpha = 0.5) +
+      geom_line(aes(year, centroid_northings), data = sp1_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
+      geom_line(aes(y = northings_survey_mean), color = "darkorchid4") +
+      scale_color_manual(values = sim_cols[which(sims %in% input$sim)]) + 
+      scale_fill_manual(values = sim_cols[which(sims %in% input$sim)]) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       labs(
         y = "northings (km)",
-        title = "Latitudinal component of range centroid (mean and SD)", 
-        subtitle = "(Weighted mean of observed survey data in black)"
+        title = "Latitudinal component of range centroid (mean and SD)"
       )
     
   })
@@ -312,13 +400,14 @@ server <- function(input, output) {
       geom_ribbon(aes(ymin = eastings_mean - eastings_sd, ymax = eastings_mean + eastings_sd, fill = sim), 
                   alpha = 0.5) + 
       geom_line(aes(color = sim)) + 
-      geom_line(aes(year, centroid_eastings), data = sp1_empirical(), inherit.aes = FALSE, alpha = 0.5) +
-      geom_point(aes(year, centroid_eastings), data = sp1_empirical(), inherit.aes = FALSE) +
+      geom_line(aes(year, centroid_eastings), data = sp1_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
+      geom_line(aes(y = eastings_survey_mean), color = "darkorchid4") +
+      scale_color_manual(values = sim_cols[which(sims %in% input$sim)]) + 
+      scale_fill_manual(values = sim_cols[which(sims %in% input$sim)]) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       labs(
         y = "eastings (km)",
-        title = "Longitudinal component of range centroid (mean and SD)",
-        subtitle = "(Weighted mean of observed survey data in black)"
+        title = "Longitudinal component of range centroid (mean and SD)"
       )
     
   })
@@ -332,13 +421,14 @@ server <- function(input, output) {
       geom_ribbon(aes(ymin = area_occupied_2.5, ymax = area_occupied_97.5, fill = sim), 
                   alpha = 0.5) + 
       geom_line(aes(color = sim)) + 
-      geom_line(aes(year, area_occupied), data = sp1_empirical(), inherit.aes = FALSE, alpha = 0.5) +
-      geom_point(aes(year, area_occupied), data = sp1_empirical(), inherit.aes = FALSE) +
+      geom_line(aes(year, area_occupied), data = sp1_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
+      geom_line(aes(y = area_occupied_survey_mean), color = "darkorchid4") +
+      scale_color_manual(values = sim_cols[which(sims %in% input$sim)]) + 
+      scale_fill_manual(values = sim_cols[which(sims %in% input$sim)]) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       labs(
         y = "area occupied (%)",
-        title = "Area occupied (mean and 95% CI)", 
-        subtitle = "(Area occupied computed from observed survey data in black)"
+        title = "Area occupied (mean and 95% CI)"
       )
     
   })
@@ -351,6 +441,7 @@ server <- function(input, output) {
       annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_line(aes(color = sim)) + 
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
+      scale_color_manual(values = sim_cols[which(sims %in% input$sim)]) + 
       labs(
         y = "Mahalanobis distance",
         title = "Environmental novelty, bionomial component (mean and SD)"
@@ -362,18 +453,19 @@ server <- function(input, output) {
     
     sp1_summary() |> 
       filter(sim %in% input$sim) |> 
-      ggplot(aes(year, mahalanobis_gamma_mean)) +
+      ggplot(aes(year, mahalanobis_pos_mean)) +
       annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_line(aes(color = sim)) + 
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
+      scale_color_manual(values = sim_cols[which(sims %in% input$sim)]) + 
       labs(
         y = "Mahalanobis distance",
-        title = "Environmental novelty, gamma component (mean and SD)"
+        title = "Environmental novelty, lognormal component (mean and SD)"
       )
     
   })
   
-  ## Plots for species 1
+  ## Plots for species 2
   output$sp2_northings <- renderPlot({
     
     sp2_summary() |> 
@@ -383,13 +475,14 @@ server <- function(input, output) {
       geom_ribbon(aes(ymin = northings_mean - northings_sd, ymax = northings_mean + northings_sd, fill = sim), 
                   alpha = 0.5) + 
       geom_line(aes(color = sim)) + 
-      geom_line(aes(year, centroid_northings), data = sp2_empirical(), inherit.aes = FALSE, alpha = 0.5) +
-      geom_point(aes(year, centroid_northings), data = sp2_empirical(), inherit.aes = FALSE) +
+      geom_line(aes(year, centroid_northings), data = sp2_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
+      geom_line(aes(y = northings_survey_mean), color = "darkorchid4") +
+      scale_color_manual(values = sim_cols[which(sims %in% input$sim)]) + 
+      scale_fill_manual(values = sim_cols[which(sims %in% input$sim)]) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       labs(
         y = "northings (km)",
-        title = "Latitudinal component of range centroid (mean and SD)", 
-        subtitle = "(Weighted mean of observed survey data in black)"
+        title = "Latitudinal component of range centroid (mean and SD)"
       )
     
   })
@@ -403,13 +496,14 @@ server <- function(input, output) {
       geom_ribbon(aes(ymin = eastings_mean - eastings_sd, ymax = eastings_mean + eastings_sd, fill = sim), 
                   alpha = 0.5) + 
       geom_line(aes(color = sim)) + 
-      geom_line(aes(year, centroid_eastings), data = sp2_empirical(), inherit.aes = FALSE, alpha = 0.5) +
-      geom_point(aes(year, centroid_eastings), data = sp2_empirical(), inherit.aes = FALSE) +
+      geom_line(aes(year, centroid_eastings), data = sp2_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
+      geom_line(aes(y = eastings_survey_mean), color = "darkorchid4") +
+      scale_color_manual(values = sim_cols[which(sims %in% input$sim)]) + 
+      scale_fill_manual(values = sim_cols[which(sims %in% input$sim)]) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       labs(
         y = "eastings (km)",
-        title = "Longitudinal component of range centroid (mean and SD)", 
-        subtitle = "(Weighted mean of observed survey data in black)"
+        title = "Longitudinal component of range centroid (mean and SD)"
       )
     
   })
@@ -423,13 +517,14 @@ server <- function(input, output) {
       geom_ribbon(aes(ymin = area_occupied_2.5, ymax = area_occupied_97.5, fill = sim), 
                   alpha = 0.5) + 
       geom_line(aes(color = sim)) + 
-      geom_line(aes(year, area_occupied), data = sp2_empirical(), inherit.aes = FALSE, alpha = 0.5) +
-      geom_point(aes(year, area_occupied), data = sp2_empirical(), inherit.aes = FALSE) +
+      geom_line(aes(year, area_occupied), data = sp2_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
+      geom_line(aes(y = area_occupied_survey_mean), color = "darkorchid4") +
+      scale_color_manual(values = sim_cols[which(sims %in% input$sim)]) + 
+      scale_fill_manual(values = sim_cols[which(sims %in% input$sim)]) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       labs(
         y = "area occupied (%)",
-        title = "Area occupied (mean and 95% CI)", 
-        subtitle = "(Area occupied computed from observed survey data in black)"
+        title = "Area occupied (mean and 95% CI)"
       )
     
   })
@@ -442,6 +537,7 @@ server <- function(input, output) {
       annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_line(aes(color = sim)) + 
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
+      scale_color_manual(values = sim_cols[which(sims %in% input$sim)]) + 
       labs(
         y = "Mahalanobis distance",
         title = "Environmental novelty, bionomial component (mean and SD)"
@@ -453,13 +549,14 @@ server <- function(input, output) {
     
     sp2_summary() |> 
       filter(sim %in% input$sim) |> 
-      ggplot(aes(year, mahalanobis_gamma_mean)) +
+      ggplot(aes(year, mahalanobis_pos_mean)) +
       annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_line(aes(color = sim)) + 
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
+      scale_color_manual(values = sim_cols[which(sims %in% input$sim)]) + 
       labs(
         y = "Mahalanobis distance",
-        title = "Environmental novelty, gamma component (mean and SD)"
+        title = "Environmental novelty, lognormal component (mean and SD)"
       )
     
   })
