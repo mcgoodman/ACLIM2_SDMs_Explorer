@@ -359,14 +359,20 @@ server <- function(input, output) {
   
   # Model summaries
   output$sp1_mod <- renderTable({
-    read.csv(paste0(sp1_dir(), "/covariate_selection.csv")) |> 
-      group_by(component) |> 
-      filter(RMSE == min(RMSE))
+    mod_tab <- read.csv(paste0(sp1_dir(), "/covariate_selection.csv"))
+    if(!all(is.na(mod_tab$RMSE))) {
+      mod_tab |> group_by(component) |> filter(RMSE == min(RMSE))
+    } else {
+      mod_tab |> group_by(component) |> filter(AIC == min(AIC))
+    }
   })
   output$sp2_mod <- renderTable({
-    read.csv(paste0(sp2_dir(), "/covariate_selection.csv")) |> 
-      group_by(component) |> 
-      filter(RMSE == min(RMSE))
+    mod_tab <- read.csv(paste0(sp2_dir(), "/covariate_selection.csv"))
+    if(!all(is.na(mod_tab$RMSE))) {
+      mod_tab |> group_by(component) |> filter(RMSE == min(RMSE))
+    } else {
+      mod_tab |> group_by(component) |> filter(AIC == min(AIC))
+    }
   })
   
   ## Plots for species 1
