@@ -5,7 +5,7 @@ account: mgoodman
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 8549006
-bundleId: 7026298
+bundleId: 7030017
 url: https://mgoodman.shinyapps.io/aclim2_sdms_explorer/
-when: 1680143340.48978
-lastSyncTime: 1680143340.48979
+when: 1680206020.19973
+lastSyncTime: 1680206020.19977

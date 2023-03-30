@@ -163,7 +163,10 @@ ui <- fluidPage(
           h3("Range characteristics"),
           p(paste(
             "Plots of the latitudinal and longitudinal components of the range centroid, as well as the area of",
-            "the eastern & northern Bering Sea shelf occupied, with 95% credible intervals:"
+            "the eastern & northern Bering Sea shelf occupied, with standard error bands or 95% credible intervals.",
+            "Empirical means computed directly from the survey data are shown in light purple, along with means",
+            "computed from the model estimates only for the survey locations sampled in each respective year in", 
+            "dark purple."
           )),
           plotOutput("sp1_northings"), 
           plotOutput("sp1_eastings"),
