@@ -97,7 +97,8 @@ ui <- fluidPage(
         label = "Climate models", 
         choices = sims,
         selected = sims
-      )
+      ), 
+      downloadButton('downloadData', 'Download')
     ),
     
     # Show a plot of the generated distribution
@@ -566,6 +567,15 @@ server <- function(input, output) {
       )
     
   })
+  
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste0(paste('overlap', gsub(" ", "_", input$sp1), input$bin1, gsub(" ", "_", input$sp2), input$bin2, sep = "-"), ".csv")
+    },
+    content = function(con) {
+      write.csv(plot_data(), con)
+    }
+  )
   
   
 }
