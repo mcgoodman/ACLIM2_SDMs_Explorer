@@ -63,6 +63,8 @@ plot_overlap <- function(data, overlap_index, ylab, plot_sims) {
   
 }
 
+linebreaks <- function(n){HTML(strrep(br(), n))}
+
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   
@@ -208,7 +210,8 @@ ui <- fluidPage(
           plotOutput("sp1_novelty_binom"),
           plotOutput("sp1_novelty_gamma"), 
           h3("Map of fitted and observed values"), 
-          imageOutput("sp1_fit_pred")
+          imageOutput("sp1_fit_pred"), 
+          linebreaks(12)
         )), 
         tabPanel("Species 2", style = "background-color: #ffffff;", fluidPage(
           h2("Selected models"),
@@ -244,7 +247,8 @@ ui <- fluidPage(
           plotOutput("sp2_novelty_binom"),
           plotOutput("sp2_novelty_gamma"),
           h3("Map of fitted and observed values"), 
-          imageOutput("sp2_fit_pred")
+          imageOutput("sp2_fit_pred"),
+          linebreaks(12)
         ))
       )
     )
