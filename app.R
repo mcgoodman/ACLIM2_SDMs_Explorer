@@ -11,10 +11,18 @@ overlap$bin1[is.na(overlap$bin1)] <- "all"
 overlap$bin2[is.na(overlap$bin2)] <- "all"
 species1 <- unique(overlap$species1)
 species2 <- unique(overlap$species2)
-sims <- unique(overlap$sim)
+
+## Options for climate models / scenarios
+models <- c("CESM", "GFDL", "MIROC")
+scenario_abr <- c("SSP126", "RCP45", "SSP585")
+scenario_nm <- c("SSP1-2.6 (CMIP6)", "RCP 4.5 (CMIP5)", "SSP5-8.5 (CMIP6)")
 
 ## Colors for plots
-sim_cols <- c("black", PNWColors::pnw_palette("Bay", length(sims[sims != "hindcast"])))
+sim_names <- c(
+  "hindcast", "SSP126 CESM", "SSP126 GFDL", "SSP126 MIROC", "RCP45 CESM", 
+  "RCP45 GFDL", "RCP45 MIROC", "SSP585 CESM", "SSP585 GFDL", "SSP585 MIROC"
+)
+sim_cols <- c("black", PNWColors::pnw_palette("Bay", length(sim_names[sim_names != "hindcast"])))
 
 ## Global plot theme settings
 theme_set(
@@ -49,8 +57,8 @@ plot_overlap <- function(data, overlap_index, ylab, plot_sims) {
     annotate("text", x = 2020, y = min(data[["X2.5."]]) + 0.025 * (max(data[["X2.5."]]) - min(data[["X2.5."]])),
              label = "forecast", hjust = 0, vjust = 0, size = 5) +
     scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
-    scale_color_manual(values = sim_cols[which(sims %in% plot_sims)]) + 
-    scale_fill_manual(values = sim_cols[which(sims %in% plot_sims)]) +
+    scale_color_manual(values = sim_cols[which(sim_names %in% plot_sims)]) + 
+    scale_fill_manual(values = sim_cols[which(sim_names %in% plot_sims)]) +
     labs(y = ylab)
   
 }
@@ -93,12 +101,20 @@ ui <- fluidPage(
         choices = c("Estimated biomass", "Probability of occurrence")
       ), 
       checkboxGroupInput(
-        inputId = "sim", 
+        inputId = "scenario", 
+        label = "Climate scenarios", 
+        choices = scenario_nm,
+        selected = scenario_nm
+      ),
+      checkboxGroupInput(
+        inputId = "model", 
         label = "Climate models", 
-        choices = sims,
-        selected = sims
+        choices = models,
+        selected = "CESM"
       ), 
-      downloadButton('downloadData', 'Download')
+      downloadButton('downloadOverlap', 'Spatial Overlap'), br(), br(),
+      downloadButton('downloadSp1', 'Species 1 Projection'), br(), br(),
+      downloadButton('downloadSp2', 'Species 2 Projection')
     ),
     
     # Show a plot of the generated distribution
@@ -180,7 +196,9 @@ ui <- fluidPage(
             "and are therefore different for the binomial and gamma components:"
           )),
           plotOutput("sp1_novelty_binom"),
-          plotOutput("sp1_novelty_gamma")
+          plotOutput("sp1_novelty_gamma"), 
+          h3("Map of fitted and observed values"), 
+          imageOutput("sp1_fit_pred")
         )), 
         tabPanel("Species 2", fluidPage(
           h2("Selected models"),
@@ -214,7 +232,9 @@ ui <- fluidPage(
             "and are therefore different for the binomial and lognormal components:"
           )),
           plotOutput("sp2_novelty_binom"),
-          plotOutput("sp2_novelty_gamma")
+          plotOutput("sp2_novelty_gamma"),
+          h3("Map of fitted and observed values"), 
+          imageOutput("sp2_fit_pred")
         ))
       )
     )
@@ -225,7 +245,12 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   #output$sp1_bins <- reactive(input$sp1)
-  sp1_bins <- reactive(unique(overlap$bin1[overlap$species1 == input$sp1]))
+  sp1_bins <- reactive({
+    unique(c(
+      unique(overlap$bin1[overlap$species1 == input$sp1]), 
+      unique(overlap$bin2[overlap$species2 == input$sp1])
+    ))
+  })
   
   output$bin1 <- renderUI({
     
@@ -242,7 +267,12 @@ server <- function(input, output) {
     
   })
   
-  sp2_bins <- reactive(unique(overlap$bin1[overlap$species2 == input$sp1]))
+  sp2_bins <- reactive({
+    unique(c(
+      unique(overlap$bin1[overlap$species1 == input$sp2]), 
+      unique(overlap$bin2[overlap$species2 == input$sp2])
+    ))
+  })
   
   output$bin2 <- renderUI(
     
@@ -259,16 +289,39 @@ server <- function(input, output) {
     
   )
   
-  plot_data <- reactive(
-    overlap |> 
-      filter(
-        species1 == input$sp1 &
-          species2 == input$sp2 &
-          bin1 == input$bin1 & 
-          bin2 == input$bin2 &
-          sim %in% input$sim
-      )
-  )
+  sims <- reactive({
+    scenarios <- scenario_abr[match(input$scenario, scenario_nm)]
+    as.character(c(apply(expand.grid(scenarios, input$model), MARGIN = 1, paste, collapse = " ")))
+  })
+  
+  plot_data <- reactive({
+    
+    if (any(overlap$species1 == input$sp1 & overlap$bin1 == input$bin1 & 
+            overlap$species2 == input$sp2 & overlap$bin2 == input$bin2)) {
+      plot_data <- overlap |> 
+        filter(
+          species1 == input$sp1 &
+            species2 == input$sp2 &
+            bin1 == input$bin1 & 
+            bin2 == input$bin2 &
+            sim %in% c("hindcast", sims())
+        ) |> 
+        mutate(sim = factor(sim, levels = sim_names)) 
+    } else {
+      plot_data <- overlap |> 
+        filter(
+          species1 == input$sp2 &
+            species2 == input$sp1 &
+            bin1 == input$bin2 & 
+            bin2 == input$bin1 &
+            sim %in% c("hindcast", sims())
+        ) |> 
+        mutate(sim = factor(sim, levels = sim_names)) 
+    }
+    
+    return(plot_data)
+    
+  })
   
   output$overlap_background <- reactive(
     if(input$index == "Probability of occurrence") {
@@ -322,9 +375,9 @@ server <- function(input, output) {
   output$overlap_plot1 <- renderPlot(
     
     if (input$index == "Probability of occurrence") {
-      plot_overlap(plot_data(), "area_overlap", "area overlap", input$sim)
+      plot_overlap(plot_data(), "area_overlap", "area overlap", c("hindcast", sims()))
     } else {
-      plot_overlap(plot_data(), "loc_colloc", "local index of collocation", input$sim)
+      plot_overlap(plot_data(), "loc_colloc", "local index of collocation", c("hindcast", sims()))
     }
     
   )
@@ -332,9 +385,9 @@ server <- function(input, output) {
   output$overlap_plot2 <- renderPlot(
     
     if (input$index == "Probability of occurrence") {
-      plot_overlap(plot_data(), "bhattacharyya_encounter", "Bhattacharyya's coefficient", input$sim)
+      plot_overlap(plot_data(), "bhattacharyya_encounter", "Bhattacharyya's coefficient", c("hindcast", sims()))
     } else {
-      plot_overlap(plot_data(), "bhattacharyya", "Bhattacharyya's coefficient", input$sim)
+      plot_overlap(plot_data(), "bhattacharyya", "Bhattacharyya's coefficient", c("hindcast", sims()))
     }
     
   )
@@ -342,9 +395,9 @@ server <- function(input, output) {
   output$overlap_plot3 <- renderPlot(
     
     if (input$index == "Probability of occurrence") {
-      plot_overlap(plot_data(), "gbl_colloc_encounter", "global index of collocation", input$sim)
+      plot_overlap(plot_data(), "gbl_colloc_encounter", "global index of collocation", c("hindcast", sims()))
     } else {
-      plot_overlap(plot_data(), "gbl_colloc", "global index of collocation", input$sim)
+      plot_overlap(plot_data(), "gbl_colloc", "global index of collocation", c("hindcast", sims()))
     }
     
   )
@@ -354,8 +407,12 @@ server <- function(input, output) {
   sp2_dir <-  reactive(paste0("output/", paste0(gsub(" ", "_", input$sp2), ifelse(input$bin2 == "all", "", paste0("-", input$bin2)))))
   
   # Range summary files
-  sp1_summary <- reactive(read.csv(paste0(sp1_dir(), "/range_summary.csv")))
-  sp2_summary <- reactive(read.csv(paste0(sp2_dir(), "/range_summary.csv")))
+  sp1_summary <- reactive({
+    read.csv(paste0(sp1_dir(), "/range_summary.csv")) |> mutate(sim = factor(sim, levels = sim_names)) 
+  })
+  sp2_summary <- reactive({
+    read.csv(paste0(sp2_dir(), "/range_summary.csv")) |> mutate(sim = factor(sim, levels = sim_names)) 
+  })
   
   # Empirical range summaries for years in observed data
   sp1_empirical <- reactive(read.csv(paste0(sp1_dir(), "/range_empirical.csv")))
@@ -383,17 +440,17 @@ server <- function(input, output) {
   output$sp1_northings <- renderPlot({
     
     sp1_summary() |> 
-      filter(sim %in% input$sim) |> 
+      filter(sim %in% c("hindcast", sims())) |> 
       ggplot(aes(year, northings_mean)) + 
       annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
-      geom_ribbon(aes(ymin = northings_mean - northings_sd, ymax = northings_mean + northings_sd, fill = sim), 
-                  alpha = 0.5) + 
-      geom_line(aes(color = sim)) + 
+      geom_ribbon(aes(ymin = northings_mean - northings_sd, ymax = northings_mean + northings_sd, fill = sim),
+                  alpha = 0.5) +
+      geom_line(aes(color = sim)) +
       geom_line(aes(year, centroid_northings), data = sp1_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
       geom_line(aes(y = northings_survey_mean), color = "darkorchid4") +
-      scale_color_manual(values = sim_cols[which(sims %in% input$sim)]) + 
-      scale_fill_manual(values = sim_cols[which(sims %in% input$sim)]) +
-      scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
+      scale_color_manual(values = sim_cols[which(sim_names %in% c("hindcast", sims()))]) +
+      scale_fill_manual(values = sim_cols[which(sim_names %in% c("hindcast", sims()))]) +
+      scale_x_continuous(breaks = seq(1970, 2100, 10)) +
       labs(
         y = "northings (km)",
         title = "Latitudinal component of range centroid (mean and SD)"
@@ -404,7 +461,7 @@ server <- function(input, output) {
   output$sp1_eastings <- renderPlot({
     
     sp1_summary() |> 
-      filter(sim %in% input$sim) |> 
+      filter(sim %in% c("hindcast", sims())) |> 
       ggplot(aes(year, eastings_mean)) + 
       annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_ribbon(aes(ymin = eastings_mean - eastings_sd, ymax = eastings_mean + eastings_sd, fill = sim), 
@@ -412,8 +469,8 @@ server <- function(input, output) {
       geom_line(aes(color = sim)) + 
       geom_line(aes(year, centroid_eastings), data = sp1_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
       geom_line(aes(y = eastings_survey_mean), color = "darkorchid4") +
-      scale_color_manual(values = sim_cols[which(sims %in% input$sim)]) + 
-      scale_fill_manual(values = sim_cols[which(sims %in% input$sim)]) +
+      scale_color_manual(values = sim_cols[which(sim_names %in% c("hindcast", sims()))]) + 
+      scale_fill_manual(values = sim_cols[which(sim_names %in% c("hindcast", sims()))]) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       labs(
         y = "eastings (km)",
@@ -425,7 +482,7 @@ server <- function(input, output) {
   output$sp1_area <- renderPlot({
     
     sp1_summary() |> 
-      filter(sim %in% input$sim) |> 
+      filter(sim %in% c("hindcast", sims())) |> 
       ggplot(aes(year, area_occupied_mean)) + 
       annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_ribbon(aes(ymin = area_occupied_2.5, ymax = area_occupied_97.5, fill = sim), 
@@ -433,11 +490,11 @@ server <- function(input, output) {
       geom_line(aes(color = sim)) + 
       geom_line(aes(year, area_occupied), data = sp1_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
       geom_line(aes(y = area_occupied_survey_mean), color = "darkorchid4") +
-      scale_color_manual(values = sim_cols[which(sims %in% input$sim)]) + 
-      scale_fill_manual(values = sim_cols[which(sims %in% input$sim)]) +
+      scale_color_manual(values = sim_cols[which(sim_names %in% c("hindcast", sims()))]) + 
+      scale_fill_manual(values = sim_cols[which(sim_names %in% c("hindcast", sims()))]) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       labs(
-        y = "area occupied (%)",
+        y = "area occupied",
         title = "Area occupied (mean and 95% CI)"
       )
     
@@ -446,12 +503,12 @@ server <- function(input, output) {
   output$sp1_novelty_binom <- renderPlot({
     
     sp1_summary() |> 
-      filter(sim %in% input$sim) |> 
+      filter(sim %in% c("hindcast", sims())) |> 
       ggplot(aes(year, mahalanobis_binom_mean)) +
       annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_line(aes(color = sim)) + 
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
-      scale_color_manual(values = sim_cols[which(sims %in% input$sim)]) + 
+      scale_color_manual(values = sim_cols[which(sim_names %in% c("hindcast", sims()))]) + 
       labs(
         y = "Mahalanobis distance",
         title = "Environmental novelty, bionomial component (mean and SD)"
@@ -462,12 +519,12 @@ server <- function(input, output) {
   output$sp1_novelty_gamma <- renderPlot({
     
     sp1_summary() |> 
-      filter(sim %in% input$sim) |> 
+      filter(sim %in% c("hindcast", sims())) |> 
       ggplot(aes(year, mahalanobis_pos_mean)) +
       annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_line(aes(color = sim)) + 
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
-      scale_color_manual(values = sim_cols[which(sims %in% input$sim)]) + 
+      scale_color_manual(values = sim_cols[which(sim_names %in% c("hindcast", sims()))]) + 
       labs(
         y = "Mahalanobis distance",
         title = "Environmental novelty, lognormal component (mean and SD)"
@@ -475,11 +532,13 @@ server <- function(input, output) {
     
   })
   
+  output$sp1_fit_pred <- renderImage(list(src = paste0(sp1_dir(), "/fitted_observed_map.png"), width = "100%", deleteFile = FALSE))
+  
   ## Plots for species 2
   output$sp2_northings <- renderPlot({
     
     sp2_summary() |> 
-      filter(sim %in% input$sim) |> 
+      filter(sim %in% c("hindcast", sims())) |> 
       ggplot(aes(year, northings_mean)) + 
       annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_ribbon(aes(ymin = northings_mean - northings_sd, ymax = northings_mean + northings_sd, fill = sim), 
@@ -487,8 +546,8 @@ server <- function(input, output) {
       geom_line(aes(color = sim)) + 
       geom_line(aes(year, centroid_northings), data = sp2_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
       geom_line(aes(y = northings_survey_mean), color = "darkorchid4") +
-      scale_color_manual(values = sim_cols[which(sims %in% input$sim)]) + 
-      scale_fill_manual(values = sim_cols[which(sims %in% input$sim)]) +
+      scale_color_manual(values = sim_cols[which(sim_names %in% c("hindcast", sims()))]) + 
+      scale_fill_manual(values = sim_cols[which(sim_names %in% c("hindcast", sims()))]) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       labs(
         y = "northings (km)",
@@ -500,7 +559,7 @@ server <- function(input, output) {
   output$sp2_eastings <- renderPlot({
     
     sp2_summary() |> 
-      filter(sim %in% input$sim) |> 
+      filter(sim %in% c("hindcast", sims())) |> 
       ggplot(aes(year, eastings_mean)) + 
       annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_ribbon(aes(ymin = eastings_mean - eastings_sd, ymax = eastings_mean + eastings_sd, fill = sim), 
@@ -508,8 +567,8 @@ server <- function(input, output) {
       geom_line(aes(color = sim)) + 
       geom_line(aes(year, centroid_eastings), data = sp2_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
       geom_line(aes(y = eastings_survey_mean), color = "darkorchid4") +
-      scale_color_manual(values = sim_cols[which(sims %in% input$sim)]) + 
-      scale_fill_manual(values = sim_cols[which(sims %in% input$sim)]) +
+      scale_color_manual(values = sim_cols[which(sim_names %in% c("hindcast", sims()))]) + 
+      scale_fill_manual(values = sim_cols[which(sim_names %in% c("hindcast", sims()))]) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       labs(
         y = "eastings (km)",
@@ -521,7 +580,7 @@ server <- function(input, output) {
   output$sp2_area <- renderPlot({
     
     sp2_summary() |> 
-      filter(sim %in% input$sim) |> 
+      filter(sim %in% c("hindcast", sims())) |> 
       ggplot(aes(year, area_occupied_mean)) + 
       annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_ribbon(aes(ymin = area_occupied_2.5, ymax = area_occupied_97.5, fill = sim), 
@@ -529,8 +588,8 @@ server <- function(input, output) {
       geom_line(aes(color = sim)) + 
       geom_line(aes(year, area_occupied), data = sp2_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
       geom_line(aes(y = area_occupied_survey_mean), color = "darkorchid4") +
-      scale_color_manual(values = sim_cols[which(sims %in% input$sim)]) + 
-      scale_fill_manual(values = sim_cols[which(sims %in% input$sim)]) +
+      scale_color_manual(values = sim_cols[which(sim_names %in% c("hindcast", sims()))]) + 
+      scale_fill_manual(values = sim_cols[which(sim_names %in% c("hindcast", sims()))]) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       labs(
         y = "area occupied (%)",
@@ -542,12 +601,12 @@ server <- function(input, output) {
   output$sp2_novelty_binom <- renderPlot({
     
     sp2_summary() |> 
-      filter(sim %in% input$sim) |> 
+      filter(sim %in% c("hindcast", sims())) |> 
       ggplot(aes(year, mahalanobis_binom_mean)) +
       annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_line(aes(color = sim)) + 
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
-      scale_color_manual(values = sim_cols[which(sims %in% input$sim)]) + 
+      scale_color_manual(values = sim_cols[which(sim_names %in% c("hindcast", sims()))]) + 
       labs(
         y = "Mahalanobis distance",
         title = "Environmental novelty, bionomial component (mean and SD)"
@@ -558,12 +617,12 @@ server <- function(input, output) {
   output$sp2_novelty_gamma <- renderPlot({
     
     sp2_summary() |> 
-      filter(sim %in% input$sim) |> 
+      filter(sim %in% c("hindcast", sims())) |> 
       ggplot(aes(year, mahalanobis_pos_mean)) +
       annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_line(aes(color = sim)) + 
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
-      scale_color_manual(values = sim_cols[which(sims %in% input$sim)]) + 
+      scale_color_manual(values = sim_cols[which(sim_names %in% c("hindcast", sims()))]) + 
       labs(
         y = "Mahalanobis distance",
         title = "Environmental novelty, lognormal component (mean and SD)"
@@ -571,15 +630,34 @@ server <- function(input, output) {
     
   })
   
-  output$downloadData <- downloadHandler(
+  output$sp2_fit_pred <- renderImage(list(src = paste0(sp2_dir(), "/fitted_observed_map.png"), width = "100%", deleteFile = FALSE))
+  
+  output$downloadOverlap <- downloadHandler(
     filename = function() {
       paste0(paste('overlap', gsub(" ", "_", input$sp1), input$bin1, gsub(" ", "_", input$sp2), input$bin2, sep = "-"), ".csv")
     },
     content = function(con) {
-      write.csv(plot_data(), con)
+      write.csv(plot_data(), con, row.names = FALSE)
     }
   )
   
+  output$downloadSp1 <- downloadHandler(
+    filename = function() {
+      paste0(paste(gsub(" ", "_", input$sp1), input$bin1, sep = "-"), ".csv")
+    },
+    content = function(con) {
+      write.csv(sp1_summary(), con, row.names = FALSE)
+    }
+  )
+  
+  output$downloadSp2 <- downloadHandler(
+    filename = function() {
+      paste0(paste(gsub(" ", "_", input$sp2), input$bin2, sep = "-"), ".csv")
+    },
+    content = function(con) {
+      write.csv(sp2_summary(), con, row.names = FALSE)
+    }
+  )
   
 }
 
