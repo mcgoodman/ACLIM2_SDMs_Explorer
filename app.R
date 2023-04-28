@@ -1,9 +1,9 @@
 
-
 require("shiny")
 require("here")
 require("dplyr")
 require("ggplot2")
+require("shinythemes")
 
 ## Read in overlap data, extract species that estimates are available for
 overlap <- read.csv("output/overlap_summary.csv")
@@ -66,6 +66,8 @@ plot_overlap <- function(data, overlap_index, ylab, plot_sims) {
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   
+  theme = shinytheme("flatly"),
+  
   # Application title
   titlePanel("ACLIM2 SDMs: Species range and overlap forecasts"),
   
@@ -78,6 +80,14 @@ ui <- fluidPage(
   "))
   ),
   
+  # Theme adjustments
+  tags$style(HTML("
+    .tabbable > .nav > li > a {background-color: #EAEAEA;  color:#3C4C58}
+    .tabbable > .nav > li[class=active] > a {background-color: white; color:#3C4C58}
+  ")),
+  tags$style(HTML("body {background-color: #F5F5F5;}")),
+  tags$style(".well {background-color: #EAEAEA;}"),
+
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
     sidebarPanel(
@@ -120,7 +130,7 @@ ui <- fluidPage(
     # Show a plot of the generated distribution
     mainPanel(
       tabsetPanel(
-        tabPanel("Overlap", fluidPage(
+        tabPanel("Overlap", style = "background-color: #ffffff;", fluidPage(
           h2("Background"),
           p(paste(
             "This interface displays fitted means and confidence intervals from SDMs built for a suite", 
@@ -147,7 +157,7 @@ ui <- fluidPage(
           h4(textOutput("overlap_title1")),
           uiOutput("overlap_math1"),
           p(textOutput("overlap_description1")),
-          plotOutput("overlap_plot1")),
+          plotOutput("overlap_plot1"),
           h4("Bhattacharyya's coefficient"),
           withMathJax("$$\\sum \\sqrt{p_x p_y}$$"),
           p(paste(
@@ -163,8 +173,8 @@ ui <- fluidPage(
           )),
           plotOutput("overlap_plot3"),
           p("Overlap formulas and definitions following Carroll et al. (2019).")
-        ), 
-        tabPanel("Species 1", fluidPage(
+        )), 
+        tabPanel("Species 1", style = "background-color: #ffffff;", fluidPage(
           h2("Selected models"),
           p(paste(
             "Models included two components - a binomial component to fit presence/absence data and",
@@ -200,7 +210,7 @@ ui <- fluidPage(
           h3("Map of fitted and observed values"), 
           imageOutput("sp1_fit_pred")
         )), 
-        tabPanel("Species 2", fluidPage(
+        tabPanel("Species 2", style = "background-color: #ffffff;", fluidPage(
           h2("Selected models"),
           p(paste(
             "Models included two components - a binomial component to fit presence/absence data and",
@@ -532,7 +542,7 @@ server <- function(input, output) {
     
   })
   
-  output$sp1_fit_pred <- renderImage(list(src = paste0(sp1_dir(), "/fitted_observed_map.png"), width = "100%", deleteFile = FALSE))
+  output$sp1_fit_pred <- renderImage(list(src = paste0(sp1_dir(), "/fitted_observed_map.png"), width = "100%"), deleteFile = FALSE)
   
   ## Plots for species 2
   output$sp2_northings <- renderPlot({
@@ -630,7 +640,7 @@ server <- function(input, output) {
     
   })
   
-  output$sp2_fit_pred <- renderImage(list(src = paste0(sp2_dir(), "/fitted_observed_map.png"), width = "100%", deleteFile = FALSE))
+  output$sp2_fit_pred <- renderImage(list(src = paste0(sp2_dir(), "/fitted_observed_map.png"), width = "100%"), deleteFile = FALSE)
   
   output$downloadOverlap <- downloadHandler(
     filename = function() {
