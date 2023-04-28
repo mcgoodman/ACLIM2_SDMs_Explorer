@@ -162,7 +162,7 @@ ui <- fluidPage(
             "distributions, as a function of each species center of gravity (CG) and dispersion (I):"
           )),
           plotOutput("overlap_plot3"),
-          p("(Overlap formulas and definitions following Carroll et al. (2019).")
+          p("Overlap formulas and definitions following Carroll et al. (2019).")
         ), 
         tabPanel("Species 1", fluidPage(
           h2("Selected models"),
