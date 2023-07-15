@@ -161,7 +161,14 @@ ui <- fluidPage(
           h4(textOutput("overlap_title1")),
           uiOutput("overlap_math1"),
           p(textOutput("overlap_description1")),
-          plotOutput("overlap_plot1"),
+          fluidPage(
+            fluidRow(
+              div(
+                shinyWidgets::materialSwitch("y_axis", "Y-axis: 0-1", value = TRUE, right = TRUE, inline = TRUE), 
+                style = "position: absolute; right: 0; padding: 1% 2%; z-index: 1;"
+              )), 
+            plotOutput("overlap_plot1")
+          ),
           h4("Bhattacharyya's coefficient"),
           withMathJax("$$\\sum \\sqrt{p_x p_y}$$"),
           p(paste(
@@ -261,7 +268,7 @@ ui <- fluidPage(
 server <- function(input, output) {
 
   ## Function to plot spatial overlap
-  plot_overlap <- function(data, overlap_index, ylab, plot_sims) { #new
+  plot_overlap <- function(data, overlap_index, ylab, plot_sims) { 
     
     data <- data |> filter(index == overlap_index)
     
@@ -276,19 +283,21 @@ server <- function(input, output) {
       geom_ribbon(aes(ymin = X2.5., ymax = X97.5., fill = sim), alpha = 0.5) + 
       geom_line(aes(color = sim)) + 
       annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
-      annotate("segment", x = 2020, y = min(data[["X2.5."]]), 
-               xend = 2035, yend = min(data[["X2.5."]]),
+      annotate("segment", x = 2020, y = ifelse(input$y_axis, 0, min(data[["X2.5."]])), 
+               xend = 2035, yend = ifelse(input$y_axis, 0, min(data[["X2.5."]])),
                arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
-      annotate("segment", x = 2018, y = min(data[["X2.5."]]), 
-               xend = 2003, yend = min(data[["X2.5."]]),
+      annotate("segment", x = 2018, y = ifelse(input$y_axis, 0, min(data[["X2.5."]])), 
+               xend = 2003, yend = ifelse(input$y_axis, 0, min(data[["X2.5."]])),
                arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
-      annotate("text", x = 2018, y = min(data[["X2.5."]]) + 0.025 * (max(data[["X2.5."]]) - min(data[["X2.5."]])), 
+      annotate("text", x = 2018, y = ifelse(input$y_axis, 0, min(data[["X2.5."]])) + 0.025 * ifelse(input$y_axis, 1, (max(data[["X97.5."]]) - min(data[["X2.5."]]))), 
                label = "hindcast", hjust = 1, vjust = 0, size = 5) +
-      annotate("text", x = 2020, y = min(data[["X2.5."]]) + 0.025 * (max(data[["X2.5."]]) - min(data[["X2.5."]])),
+      annotate("text", x = 2020, y = ifelse(input$y_axis, 0, min(data[["X2.5."]])) + 0.025 * ifelse(input$y_axis, 1, (max(data[["X97.5."]]) - min(data[["X2.5."]]))),
                label = "forecast", hjust = 0, vjust = 0, size = 5) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
-      scale_color_manual(values = plot_cols) + 
-      scale_fill_manual(values = plot_cols) +
+      scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
+      scale_fill_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + {
+        if (input$y_axis) scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2))
+      } +
       labs(y = ylab)
     
   }
@@ -565,8 +574,8 @@ server <- function(input, output) {
       geom_line(aes(color = sim)) +
       geom_line(aes(year, centroid_northings), data = sp1_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
       geom_line(aes(y = y_srvy), color = "darkorchid4") +
-      scale_color_manual(values = plot_cols) +
-      scale_fill_manual(values = plot_cols) +
+      scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) +
+      scale_fill_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) +
       labs(
         y = "northings (km)",
@@ -591,8 +600,8 @@ server <- function(input, output) {
       geom_line(aes(color = sim)) + 
       geom_line(aes(year, centroid_eastings), data = sp1_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
       geom_line(aes(y = y_srvy), color = "darkorchid4") +
-      scale_color_manual(values = plot_cols) + 
-      scale_fill_manual(values = plot_cols) +
+      scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
+      scale_fill_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       labs(
         y = "eastings (km)",
@@ -617,8 +626,8 @@ server <- function(input, output) {
       geom_line(aes(color = sim)) + 
       geom_line(aes(year, area_occupied), data = sp1_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
       geom_line(aes(y = y_srvy), color = "darkorchid4") +
-      scale_color_manual(values = plot_cols) + 
-      scale_fill_manual(values = plot_cols) +
+      scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
+      scale_fill_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       labs(
         y = "area occupied",
@@ -650,7 +659,7 @@ server <- function(input, output) {
       annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_line(aes(color = sim)) + 
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
-      scale_color_manual(values = plot_cols) + 
+      scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
       labs(
         y = "Mahalanobis distance",
         title = "Environmental novelty, bionomial component (mean)"
@@ -681,7 +690,7 @@ server <- function(input, output) {
       annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_line(aes(color = sim)) + 
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
-      scale_color_manual(values = plot_cols) + 
+      scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
       labs(
         y = "Mahalanobis distance",
         title = "Environmental novelty, lognormal component (mean)"
@@ -708,8 +717,8 @@ server <- function(input, output) {
       geom_line(aes(color = sim)) +
       geom_line(aes(year, centroid_northings), data = sp2_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
       geom_line(aes(y = y_srvy), color = "darkorchid4") +
-      scale_color_manual(values = plot_cols) +
-      scale_fill_manual(values = plot_cols) +
+      scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) +
+      scale_fill_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       labs(
         y = "northings (km)",
@@ -734,8 +743,8 @@ server <- function(input, output) {
       geom_line(aes(color = sim)) + 
       geom_line(aes(year, centroid_eastings), data = sp2_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
       geom_line(aes(y = y_srvy), color = "darkorchid4") +
-      scale_color_manual(values = plot_cols) + 
-      scale_fill_manual(values = plot_cols) +
+      scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
+      scale_fill_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       labs(
         y = "eastings (km)",
@@ -760,8 +769,8 @@ server <- function(input, output) {
       geom_line(aes(color = sim)) + 
       geom_line(aes(year, area_occupied), data = sp2_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
       geom_line(aes(y = y_srvy), color = "darkorchid4") +
-      scale_color_manual(values = plot_cols) + 
-      scale_fill_manual(values = plot_cols) +
+      scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
+      scale_fill_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       labs(
         y = "area occupied",
@@ -793,7 +802,7 @@ server <- function(input, output) {
       annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_line(aes(color = sim)) + 
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
-      scale_color_manual(values = plot_cols) + 
+      scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
       labs(
         y = "Mahalanobis distance",
         title = "Environmental novelty, bionomial component (mean)"
@@ -824,7 +833,7 @@ server <- function(input, output) {
       annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_line(aes(color = sim)) + 
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
-      scale_color_manual(values = plot_cols) + 
+      scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
       labs(
         y = "Mahalanobis distance",
         title = "Environmental novelty, lognormal component (mean)"
