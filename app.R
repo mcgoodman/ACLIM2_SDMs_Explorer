@@ -104,7 +104,7 @@ ui <- fluidPage(
       h5(HTML("<b>Climate models<b>")),
       helpText("Note: Ensembling combines estimates from selected models only"),
       fluidRow(
-        column(3,
+        column(4,
                shinyWidgets::checkboxGroupButtons(
                  inputId = "ensemble", 
                  label = NULL, 
@@ -113,7 +113,7 @@ ui <- fluidPage(
                  justified = TRUE
                ) #new
         ), 
-        column(9,
+        column(8,
                shinyWidgets::checkboxGroupButtons(
                  inputId = "model", 
                  label = NULL, 
