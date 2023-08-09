@@ -46,6 +46,60 @@ theme_set(
 
 linebreaks <- function(n){HTML(strrep(br(), n))}
 
+# Descriptive text used on multiple pages
+description <- list(
+  models = paste(
+    "The moodels used here included two components - a binomial component to fit presence/absence data and",
+    "with which to project probability of occurrence / habitat suitability, and a lognormal component",
+    "fit to biomass values greater than zero. Covariates were selected separately for each component.",
+    "Projections and overlap values can be based on either estimated probability of occurrence (in which case",
+    "the estimates from the lognormal model are ignored), or total estimated biomass, i.e., the product of",
+    "estimated probability of occurrence and estimated positive biomass. The best-fit model according to time-series",
+    "cross validation is described below. The AUC and R^2 correspond to a model fitted to all available data",
+    "while the RMSE pertains to the training data and was used to select the best-fit model."
+  ),
+  centroids = paste(
+    "These plots display the latitudinal and longitudinal components of the range centroid (respectively,",
+    "the mean location in eastings (UTM zone 2) and northings weighted by either probability of occurrence",
+    "or expected biomass (these plots will change depending on which option you choose to compute overlap",
+    "using). Empirical means computed directly from the survey data are shown in light purple, along with means",
+    "computed from the model estimates only for the survey locations sampled in each respective year in", 
+    "dark purple. If this species is expected to occupy a substantial portion of the NBS survey area",
+    "during the surveyed years, the model estimates computed only for the surveyed years may differ",
+    "substantially from the model estimates for the entire EBS + NBS survey region. Shown are the means",
+    "and 95% confidence bands."
+  ),
+  area_occupied = paste(
+    "Area occupied is defined here as the proportion of the survey area (EBS + NBS) for which the predicted",
+    "probability of occurrence is greater than 0.5 (this plot will not differ bewteen 'probability of occurrence'",
+    "and 'estimated biomass' options). Shown are the means and 95% confidence band."
+  ), 
+  mahalanobis = paste(
+    "Plots of Mahalanobis distance, which is a multivariate metric of environmental novelty",
+    "comparing each year's environmental conditions with the multivariate mean and covariance",
+    "of the biophyiscal state of the bering sea during years in the observed data, based on the",
+    "hindcast. The variables used to guage environmental novelty are those in the best-fit models",
+    "and are therefore different for the binomial and lognormal components:"
+  ),
+  fitted_map = paste(
+    "These are maps of fitted vs. observed biomass for selected years. The final model includes annual random",
+    "intercepts and spatially-correlated errors. Annual intercepts are reflected in the plots below, but not",
+    "spatial errors - i.e., annual variation in average 'brightness' can result from either the fixed effects",
+    "listed above or from the annual intercepts, but all spatial variation displayed here is attributable",
+    "to the fixed effects."
+  ),
+  proj_map = paste(
+    "These maps display the projected distribution under each scenario and climate model, averaaged across the",
+    "years 2070 - 2079 and compared to the 1995 - 2015 average (they are pre-rendered and will not change depending",
+    "on the climate models and scenarios selected in the side panel). Because the overlap metrics are invariant under",
+    "linear transformations of species abundance / biomass, what is relevant for these overlap metrics is the relative",
+    "distribution of biomass in space - so, for biomass, I've plotted the log of the normalized biomass in each panel",
+    "(biomass divided by the total). Click 'probability of occurrence' in the side panel to display the projected",
+    "probability of occurrence maps. Diamonds display the range centroid on each panel (these can be quite different",
+    "between biomass and occurrence maps)."
+  )
+)
+
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   
@@ -140,18 +194,19 @@ ui <- fluidPage(
             "This interface displays fitted means and confidence intervals from SDMs built for a suite", 
             "of eastern Bering Sea groundfish and crab species as part of the ACLIM2 project.",
             "Generalized additive models (GAMs) were built for each species with environmental covariates",
-            "selected using time-series cross validation (i.e., by optimizing 10-year ahead predictive",
-            "performance). Terms considered in the models include temperature, depth, oxygen, pH, and principal",
-            "components axes for a collection of other variables in the ROMS-NPZ hindcast, including",
-            "spatiall-varying effects of the cold pool. Models were fit separately for juveniles and adults",
+            "selected using time-series cross validation (i.e., by optimizing several-year-ahead predictive",
+            "performance). Terms considered in the models include temperature, depth, oxygen, pH, and",
+            "spatially-varying effects of the cold pool. Models were fit separately for juveniles and adults",
             "for most species, but not for snow crabs, and red king crab - when plotting these species, choose",
-            "'all' for the size bin. Overlap projections are plotted below, with model summaries and range",
-            "projections for individual species available in tabs to the right."
+            "'all' for the size bin. Models were fit as delta-GAMs, with a binomial component for estimating",
+            "probability of occurrence, and lognormal component for estimating positive (non-zero) biomass.",
+            "Overlap projections are plotted below, with model summaries and range projections for individual",
+            "species available in tabs to the right."
           )),
           p(paste(
-            "Overlap metrics can be computed from either probability of occurrence, in which case only the Binomial",
+            "Overlap metrics can be computed from either probability of occurrence, in which case only the binomial",
             "component of each delta model is used, or expected biomass (i.e., the product of the expected",
-            "values from the Binomial and Lognormal model component). Fit is generally much better for the Binomial",
+            "values from the binomial and Lognormal model component). Fit is generally much better for the binomial",
             "component (i.e., the models tend to do a better job describing the distribution of encounters / non-encounters",
             "for each species than they do for species biomass distributions), so overlap estimates based on",
             "probability of occurrence only may be more reliable, possibly at the cost of ecological interpetability."
@@ -187,77 +242,49 @@ ui <- fluidPage(
         )), 
         tabPanel("Species 1", style = "background-color: #ffffff;", fluidPage(
           h2("Selected models"),
-          p(paste(
-            "Models included two components - a binomial component to fit presence/absence data and",
-            "with which to project probability of occurrence / habitat suitability, and a lognormal component",
-            "fit to biomass values greater than zero. Covariates were selected separately for each component.",
-            "Projections are based on total estimated biomass, i.e., the product of estimated probability of",
-            "occurrence and estimated positive biomass. The best-fit model according to time-series cross validation",
-            "is described below (The AIC and RMSE values are useful only in comparison to other candidate models)."
-          )),
+          p(description$models),
           tableOutput("sp1_mod"),
           h2("Plots"),
-          h3("Range characteristics"),
-          p(paste(
-            "Plots of the latitudinal and longitudinal components of the range centroid, as well as the area of",
-            "the eastern & northern Bering Sea shelf occupied, with standard error bands or 95% credible intervals.",
-            "Empirical means computed directly from the survey data are shown in light purple, along with means",
-            "computed from the model estimates only for the survey locations sampled in each respective year in", 
-            "dark purple."
-          )),
+          h3("Range centroids"),
+          p(description$centroids),
           plotOutput("sp1_northings"), 
           plotOutput("sp1_eastings"),
+          h3("Area occupied"),
+          p(description$area_occupied),
           plotOutput("sp1_area"),
           h3("Environmental novelty"),
-          p(paste(
-            "Plots of Mahalanobis distance, which is a multivariate metric of environmental novelty",
-            "comparing each year's environmental conditions with the multivariate mean and covariance",
-            "of the biophyiscal state of the bering sea during years in the observed data, based on the",
-            "hindcast. The variables used to guage environmental novelty are those in the best-fit models",
-            "and are therefore different for the binomial and lognormal components:"
-          )),
+          p(description$mahalanobis),
           plotOutput("sp1_novelty_binom"),
-          plotOutput("sp1_novelty_pos"), 
+          plotOutput("sp1_novelty_pos"),  
           h3("Map of fitted and observed values"), 
-          imageOutput("sp1_fit_pred"), 
-          linebreaks(12)
+          p(description$fitted_map),
+          imageOutput("sp1_fit_pred", height = "100%"), 
+          h3("Projected distribution, 2070-2079"),
+          p(description$proj_map),
+          imageOutput("sp1_proj_map", height = "100%")
         )), 
         tabPanel("Species 2", style = "background-color: #ffffff;", fluidPage(
           h2("Selected models"),
-          p(paste(
-            "Models included two components - a binomial component to fit presence/absence data and",
-            "with which to project probability of occurrence / habitat suitability, and a lognormal component",
-            "fit to biomass values greater than zero. Covariates were selected separately for each component.",
-            "Projections are based on total estimated biomass, i.e., the product of estimated probability of",
-            "occurrence and estimated positive biomass. The best-fit model according to time-series cross validation",
-            "is described below (The AIC and RMSE values are useful only in comparison to other candidate models)."
-          )),
+          p(description$models),
           tableOutput("sp2_mod"),
           h2("Plots"),
-          h3("Range characteristics"),
-          p(paste(
-            "Plots of the latitudinal and longitudinal components of the range centroid, as well as the area of",
-            "the eastern & northern Bering Sea shelf occupied, with standard error bands or 95% credible intervals.",
-            "Empirical means computed directly from the survey data are shown in light purple, along with means",
-            "computed from the model estimates only for the survey locations sampled in each respective year in", 
-            "dark purple."
-          )),
+          h3("Range centroids"),
+          p(description$centroids),
           plotOutput("sp2_northings"), 
           plotOutput("sp2_eastings"),
+          h3("Area occupied"),
+          p(description$area_occupied),
           plotOutput("sp2_area"),
           h3("Environmental novelty"),
-          p(paste(
-            "Plots of Mahalanobis distance, which is a multivariate metric of environmental novelty",
-            "comparing each year's environmental conditions with the multivariate mean and covariance",
-            "of the biophyiscal state of the bering sea during years in the observed data, based on the",
-            "hindcast. The variables used to guage environmental novelty are those in the best-fit models",
-            "and are therefore different for the binomial and lognormal components:"
-          )),
+          p(description$mahalanobis),
           plotOutput("sp2_novelty_binom"),
-          plotOutput("sp2_novelty_pos"),
+          plotOutput("sp2_novelty_pos"), 
           h3("Map of fitted and observed values"), 
-          imageOutput("sp2_fit_pred"),
-          linebreaks(12)
+          p(description$fitted_map),
+          imageOutput("sp2_fit_pred"), 
+          h3("Projected distribution, 2070-2079"),
+          p(description$proj_map),
+          imageOutput("sp2_proj_map", height = "100%")
         ))
       )
     )
@@ -472,38 +499,54 @@ server <- function(input, output) {
   
   # Range summary files #new
   sp1_summary <- reactive({
-    read.csv(paste0(sp1_dir(), "/range_summary.csv")) |> mutate(
+    x <- read.csv(paste0(sp1_dir(), "/range_summary.csv")) |> mutate(
       scenario = ifelse(sim == "hindcast", sim, vapply(sim, \(x) strsplit(x, " ")[[1]][1], character(1))), 
       scenario = factor(scenario, c("hindcast", scenario_abr))
     ) 
+    if (input$index == "Probability of occurrence") {
+      cols <- names(x)[endsWith(names(x), "_occ")]
+      x[,gsub("_occ", "", cols)] <- x[,cols]
+    }
+    x
   })
   sp2_summary <- reactive({
-    read.csv(paste0(sp2_dir(), "/range_summary.csv")) |> mutate(
+    x <- read.csv(paste0(sp2_dir(), "/range_summary.csv")) |> mutate(
       scenario = ifelse(sim == "hindcast", sim, vapply(sim, \(x) strsplit(x, " ")[[1]][1], character(1))), 
       scenario = factor(scenario, c("hindcast", scenario_abr))
     ) 
+    if (input$index == "Probability of occurrence") {
+      cols <- names(x)[endsWith(names(x), "_occ")]
+      x[,gsub("_occ", "", cols)] <- x[,cols]
+    }
+    x
   })
   
   # Empirical range summaries for years in observed data
-  sp1_empirical <- reactive(read.csv(paste0(sp1_dir(), "/range_empirical.csv")))
-  sp2_empirical <- reactive(read.csv(paste0(sp2_dir(), "/range_empirical.csv")))
+  sp1_empirical <- reactive({
+    x <- read.csv(paste0(sp1_dir(), "/range_empirical.csv"))
+    if (input$index == "Probability of occurrence") {
+      x$centroid_northings <- x$centroid_northings_occ
+      x$centroid_eastings <- x$centroid_eastings_occ
+    }
+    x
+  })
+  sp2_empirical <- reactive({
+    x <- read.csv(paste0(sp2_dir(), "/range_empirical.csv"))
+    if (input$index == "Probability of occurrence") {
+      x$centroid_northings <- x$centroid_northings_occ
+      x$centroid_eastings <- x$centroid_eastings_occ
+    }
+    x
+  })
   
   # Model summaries
   output$sp1_mod <- renderTable({
     mod_tab <- read.csv(paste0(sp1_dir(), "/covariate_selection.csv"))
-    if(!all(is.na(mod_tab$RMSE))) {
-      mod_tab |> group_by(component) |> filter(RMSE == min(RMSE))
-    } else {
-      mod_tab |> group_by(component) |> filter(AIC == min(AIC))
-    }
+    mod_tab |> group_by(component) |> filter(RMSE == min(RMSE)) |> dplyr::select(-species, -AIC)
   })
   output$sp2_mod <- renderTable({
     mod_tab <- read.csv(paste0(sp2_dir(), "/covariate_selection.csv"))
-    if(!all(is.na(mod_tab$RMSE))) {
-      mod_tab |> group_by(component) |> filter(RMSE == min(RMSE))
-    } else {
-      mod_tab |> group_by(component) |> filter(AIC == min(AIC))
-    }
+    mod_tab |> group_by(component) |> filter(RMSE == min(RMSE)) |> dplyr::select(-species, -AIC)
   })
   
   ## Function to format data for species range summary plots, given mean and sd
@@ -577,10 +620,7 @@ server <- function(input, output) {
       scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) +
       scale_fill_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) +
-      labs(
-        y = "northings (km)",
-        title = "Latitudinal component of range centroid (mean and 95% CI)"
-      )
+      labs(y = "northings (km)")
     
   })
   
@@ -603,10 +643,7 @@ server <- function(input, output) {
       scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
       scale_fill_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
-      labs(
-        y = "eastings (km)",
-        title = "Longitudinal component of range centroid (mean and 95% CI)"
-      )
+      labs(y = "eastings (km)")
     
   })
   
@@ -629,10 +666,7 @@ server <- function(input, output) {
       scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
       scale_fill_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
-      labs(
-        y = "area occupied",
-        title = "Area occupied (mean and 95% CI)"
-      )
+      labs(y = "area occupied")
     
   })
   
@@ -660,10 +694,7 @@ server <- function(input, output) {
       geom_line(aes(color = sim)) + 
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
-      labs(
-        y = "Mahalanobis distance",
-        title = "Environmental novelty, bionomial component (mean)"
-      )
+      labs(y = "Mahalanobis distance\n(bionomial component)")
     
   })
   
@@ -691,14 +722,13 @@ server <- function(input, output) {
       geom_line(aes(color = sim)) + 
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
-      labs(
-        y = "Mahalanobis distance",
-        title = "Environmental novelty, lognormal component (mean)"
-      )
+      labs(y = "Mahalanobis distance\n(lognormal component)")
     
   })
   
   output$sp1_fit_pred <- renderImage(list(src = paste0(sp1_dir(), "/fitted_observed_map.png"), width = "100%"), deleteFile = FALSE)
+  
+  output$sp1_proj_map <- renderImage(list(src = paste0(sp1_dir(), ifelse(input$index == "Estimated biomass", "/projection_2070-2079.png", "/projection_2070-2079_occurrence.png")), width = "100%"), deleteFile = FALSE)
   
   ## Plots for species 2
   output$sp2_northings <- renderPlot({
@@ -720,10 +750,7 @@ server <- function(input, output) {
       scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) +
       scale_fill_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
-      labs(
-        y = "northings (km)",
-        title = "Latitudinal component of range centroid (mean and 95% CI)"
-      )
+      labs(y = "northings (km)")
     
   })
   
@@ -746,10 +773,7 @@ server <- function(input, output) {
       scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
       scale_fill_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
-      labs(
-        y = "eastings (km)",
-        title = "Longitudinal component of range centroid (mean and 95% CI)"
-      )
+      labs(y = "eastings (km)")
     
   })
   
@@ -772,10 +796,7 @@ server <- function(input, output) {
       scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
       scale_fill_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
-      labs(
-        y = "area occupied",
-        title = "Area occupied (mean and 95% CI)"
-      )
+      labs(y = "area occupied")
     
   })
   
@@ -803,10 +824,7 @@ server <- function(input, output) {
       geom_line(aes(color = sim)) + 
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
-      labs(
-        y = "Mahalanobis distance",
-        title = "Environmental novelty, bionomial component (mean)"
-      )
+      labs(y = "Mahalanobis distance\n(binomial component)")
     
   })
   
@@ -834,14 +852,13 @@ server <- function(input, output) {
       geom_line(aes(color = sim)) + 
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
-      labs(
-        y = "Mahalanobis distance",
-        title = "Environmental novelty, lognormal component (mean)"
-      )
+      labs(y = "Mahalanobis distance\n(lognormal component)")
     
   })
   
   output$sp2_fit_pred <- renderImage(list(src = paste0(sp2_dir(), "/fitted_observed_map.png"), width = "100%"), deleteFile = FALSE)
+  
+  output$sp2_proj_map <- renderImage(list(src = paste0(sp2_dir(), ifelse(input$index == "Estimated biomass", "/projection_2070-2079.png", "/projection_2070-2079_occurrence.png")), width = "100%"), deleteFile = FALSE)
   
   output$downloadOverlap <- downloadHandler(
     filename = function() {
