@@ -281,7 +281,7 @@ ui <- fluidPage(
           plotOutput("sp2_novelty_pos"), 
           h3("Map of fitted and observed values"), 
           p(description$fitted_map),
-          imageOutput("sp2_fit_pred"), 
+          imageOutput("sp2_fit_pred", height = "100%"), 
           h3("Projected distribution, 2070-2079"),
           p(description$proj_map),
           imageOutput("sp2_proj_map", height = "100%")
