@@ -178,6 +178,7 @@ ui <- fluidPage(
         )
       ), 
       h5(HTML("<b>Download output<b>")),
+      helpText("Contact Maurice Goodman (goodman3@stanford.edu) for other outputs"),
       fluidRow(
         column(4, downloadButton('downloadOverlap', 'Overlap', style = "width:100%;")), 
         column(4, downloadButton('downloadSp1', 'Species 1', style = "width:100%;")), 
