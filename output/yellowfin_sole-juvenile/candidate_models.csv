@@ -1,0 +1,9 @@
+"id","species","component","formula","AIC","dev.expl","AUC","biomass_cor","weight"
+1,"yellowfin sole","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",4530.99373742152,0.743214652580583,0.980288179673303,NA,0.0715089729227946
+1,"yellowfin sole","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",154645.309098548,0.673121517115586,NA,0.462969031713544,0.219738759117776
+2,"yellowfin sole","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",4462.14858188126,0.747300434291653,0.981283807774137,NA,0.288554465649091
+2,"yellowfin sole","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",154429.050119112,0.678783278591562,NA,0.468640701614639,0.148741309855834
+3,"yellowfin sole","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",3994.60907747686,0.776139596614936,0.98585673550646,NA,0.226632874538147
+3,"yellowfin sole","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",154575.837826449,0.677097052257097,NA,0.483838199584213,0.123221296130091
+4,"yellowfin sole","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",3979.27598583864,0.77700049337462,0.986008684319313,NA,0.413303686889968
+4,"yellowfin sole","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",154160.155333715,0.687639007619092,NA,0.497675253102123,0.508298634896299

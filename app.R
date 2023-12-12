@@ -46,17 +46,24 @@ theme_set(
 
 linebreaks <- function(n){HTML(strrep(br(), n))}
 
+
 # Descriptive text used on multiple pages
 description <- list(
   models = paste(
-    "The moodels used here included two components - a binomial component to fit presence/absence data and",
-    "with which to project probability of occurrence / habitat suitability, and a lognormal component",
-    "fit to biomass values greater than zero. Covariates were selected separately for each component.",
-    "Projections and overlap values can be based on either estimated probability of occurrence (in which case",
-    "the estimates from the lognormal model are ignored), or total estimated biomass, i.e., the product of",
-    "estimated probability of occurrence and estimated positive biomass. The best-fit model according to time-series",
-    "cross validation is described below. The AUC and R^2 correspond to a model fitted to all available data",
-    "while the RMSE pertains to the training data and was used to select the best-fit model."
+    "We considered multiple candidate models for each species, and weighted their predictions using 'stacking,'",
+    "an approach aimed at minimizing the predictive error of the ensemble. Here are the partial effects (i.e., the effects",
+    "of each covariate when all other covariates are held at their average) of each covariate estimated in the candidate", 
+    "models, with darker shades indicating that an effect comes from a model with more weight:"
+  ),
+  svcs = paste(
+    "And here is the average partial effect of the cold pool spatially-varying coefficient, plotted at extents of the 2°C cold",
+    "pool of 0%, 35%, and 70% of the EBS + NBS shelf. These can be a little difficult to interpret since they represent the", 
+    "partial effect of the cold pool holding all other covariates at their average, but the extent of the cold pool will also",
+    "of course mean extents in the average temperature and the spatial distribution of temperature. Generally, however,", 
+    "locations with very low log-odds of occurrence or expected log biomass CPUE for e.g. a cold pool extent of 70% will", 
+    "indicate that no matter how suitable the environmental conditions in that area, that species is unlikely to be observed",
+    "in that location while the cold pool is extensive. If the expected log CPUE or log-odds of occurrence is less than -10, that",
+    "it has been truncated to -10 here:"
   ),
   centroids = paste(
     "These plots display the latitudinal and longitudinal components of the range centroid (respectively,",
@@ -67,36 +74,29 @@ description <- list(
     "dark purple. If this species is expected to occupy a substantial portion of the NBS survey area",
     "during the surveyed years, the model estimates computed only for the surveyed years may differ",
     "substantially from the model estimates for the entire EBS + NBS survey region. Shown are the means",
-    "and 95% confidence bands."
+    "and standard errors, computed from the pooled posterior samples of the candidate models."
   ),
   area_occupied = paste(
     "Area occupied is defined here as the proportion of the survey area (EBS + NBS) for which the predicted",
-    "probability of occurrence is greater than 0.5 (this plot will not differ bewteen 'probability of occurrence'",
-    "and 'estimated biomass' options). Shown are the means and 95% confidence band."
+    "probability of occurrence is greater than 0.5. The estimates in this plot are derived from the probability", 
+    "of ocurrence models, regardless of which model type is selected in the side bar. Shown are the means and 95%", 
+    "credible bands, computed from the pooled posterior samples of the candidate models."
   ), 
   mahalanobis = paste(
     "Plots of Mahalanobis distance, which is a multivariate metric of environmental novelty",
     "comparing each year's environmental conditions with the multivariate mean and covariance",
     "of the biophyiscal state of the bering sea during years in the observed data, based on the",
-    "hindcast. The variables used to guage environmental novelty are those in the best-fit models",
-    "and are therefore different for the binomial and lognormal components:"
+    "hindcast. The variables used to guage environmental novelty are those in the candidate models,",
+    "with the plots below showing the weighted average Mahalanobis distance across models."
   ),
   fitted_map = paste(
-    "These are maps of fitted vs. observed biomass for selected years. The final model includes annual random",
-    "intercepts and spatially-correlated errors. Annual intercepts are reflected in the plots below, but not",
-    "spatial errors - i.e., annual variation in average 'brightness' can result from either the fixed effects",
-    "listed above or from the annual intercepts, but all spatial variation displayed here is attributable",
-    "to the fixed effects."
+    "These are maps of fitted vs. observed biomass for selected years:"
   ),
   proj_map = paste(
-    "These maps display the projected distribution under each scenario and climate model, averaaged across the",
-    "years 2070 - 2079 and compared to the 1995 - 2015 average (they are pre-rendered and will not change depending",
-    "on the climate models and scenarios selected in the side panel). Because the overlap metrics are invariant under",
-    "linear transformations of species abundance / biomass, what is relevant for these overlap metrics is the relative",
-    "distribution of biomass in space - so, for biomass, I've plotted the log of the normalized biomass in each panel",
-    "(biomass divided by the total). Click 'probability of occurrence' in the side panel to display the projected",
-    "probability of occurrence maps. Diamonds display the range centroid on each panel (these can be quite different",
-    "between biomass and occurrence maps)."
+    "These maps display the projected distribution under each scenario and climate model, averaged across the",
+    "years 2040-2059, 2060-2079, and 2080-2099 and compared to the 1995 - 2015 average (they are pre-rendered and", "
+    will not change depending on the climate models and scenarios selected in the side panel, but will be different", 
+    "between probability of ocurrence and biomass projections)."
   )
 )
 
@@ -145,7 +145,7 @@ ui <- fluidPage(
       shinyWidgets::radioGroupButtons(
         inputId = "index", 
         label = "Compute overlap indices using", 
-        choices = c("Estimated biomass", "Probability of occurrence"), 
+        choices = c("Probability of occurrence", "Estimated biomass"), 
         justified = TRUE
       ), #new
       shinyWidgets::checkboxGroupButtons(
@@ -196,21 +196,18 @@ ui <- fluidPage(
             "of eastern Bering Sea groundfish and crab species as part of the ACLIM2 project.",
             "Generalized additive models (GAMs) were built for each species with environmental covariates",
             "selected using time-series cross validation (i.e., by optimizing several-year-ahead predictive",
-            "performance). Terms considered in the models include temperature, depth, oxygen, pH, and",
+            "performance). Terms considered in the models include temperature, oxygen, pH, depth, sediment grain size, and",
             "spatially-varying effects of the cold pool. Models were fit separately for juveniles and adults",
-            "for most species, but not for snow crabs, and red king crab - when plotting these species, choose",
-            "'all' for the size bin. Models were fit as delta-GAMs, with a binomial component for estimating",
-            "probability of occurrence, and lognormal component for estimating positive (non-zero) biomass.",
+            "for most species, but not for snow crabs, and red king crab. We fit models for both probability of occurrence",
+            "(using a binomial likelihood) and biomass (using a Tweedie likelihood), and weighted multiple competing models",
+            "for each species and life stage to produce an optimal ensemble based on minimizing predictive error.",
             "Overlap projections are plotted below, with model summaries and range projections for individual",
             "species available in tabs to the right."
           )),
           p(paste(
-            "Overlap metrics can be computed from either probability of occurrence, in which case only the binomial",
-            "component of each delta model is used, or expected biomass (i.e., the product of the expected",
-            "values from the binomial and Lognormal model component). Fit is generally much better for the binomial",
-            "component (i.e., the models tend to do a better job describing the distribution of encounters / non-encounters",
-            "for each species than they do for species biomass distributions), so overlap estimates based on",
-            "probability of occurrence only may be more reliable, possibly at the cost of ecological interpetability."
+            "Overlap metrics can be computed from either probability of occurrence (in which case predictions from the binomial",
+            "models are used) or expected biomass (from the Tweedie models). The overlap indices computed from these products", 
+            "differ: see below for descriptions."
           )),
           h2("Spatial overlap"),
           p(textOutput("overlap_background")),
@@ -242,9 +239,11 @@ ui <- fluidPage(
           p("Overlap formulas and definitions following Carroll et al. (2019).")
         )), 
         tabPanel("Species 1", style = "background-color: #ffffff;", fluidPage(
-          h2("Selected models"),
+          h2("Covariate effects"),
           p(description$models),
-          tableOutput("sp1_mod"),
+          plotOutput("sp1_smooths"),
+          p(description$svcs),
+          imageOutput("sp1_svc", width = "100%"),
           h2("Plots"),
           h3("Range centroids"),
           p(description$centroids),
@@ -255,19 +254,20 @@ ui <- fluidPage(
           plotOutput("sp1_area"),
           h3("Environmental novelty"),
           p(description$mahalanobis),
-          plotOutput("sp1_novelty_binom"),
-          plotOutput("sp1_novelty_pos"),  
+          plotOutput("sp1_novelty"),
           h3("Map of fitted and observed values"), 
           p(description$fitted_map),
           imageOutput("sp1_fit_pred", height = "100%"), 
-          h3("Projected distribution, 2070-2079"),
+          h3("Projected distribution"),
           p(description$proj_map),
           imageOutput("sp1_proj_map", height = "100%")
         )), 
         tabPanel("Species 2", style = "background-color: #ffffff;", fluidPage(
-          h2("Selected models"),
+          h2("Covariate effects"),
           p(description$models),
-          tableOutput("sp2_mod"),
+          plotOutput("sp2_smooths"),
+          p(description$svcs),
+          imageOutput("sp2_svc", width = "100%"),
           h2("Plots"),
           h3("Range centroids"),
           p(description$centroids),
@@ -278,12 +278,11 @@ ui <- fluidPage(
           plotOutput("sp2_area"),
           h3("Environmental novelty"),
           p(description$mahalanobis),
-          plotOutput("sp2_novelty_binom"),
-          plotOutput("sp2_novelty_pos"), 
+          plotOutput("sp2_novelty"),
           h3("Map of fitted and observed values"), 
           p(description$fitted_map),
           imageOutput("sp2_fit_pred", height = "100%"), 
-          h3("Projected distribution, 2070-2079"),
+          h3("Projected distribution"),
           p(description$proj_map),
           imageOutput("sp2_proj_map", height = "100%")
         ))
@@ -345,7 +344,7 @@ server <- function(input, output) {
     } else {
       selectInput(
         inputId = "bin1", 
-        "Species 1 size bin", 
+        "Species 1 life stage", 
         sp1_bins(), 
         selected = sp1_bins()[1]
       )
@@ -367,7 +366,7 @@ server <- function(input, output) {
     } else {
       selectInput(
         inputId = "bin2", 
-        "Species 2 size bin", 
+        "Species 2 life stage", 
         sp2_bins(), 
         selected = ifelse(length(sp2_bins()) > 1, sp2_bins()[2], sp2_bins()[1])
       )
@@ -540,15 +539,25 @@ server <- function(input, output) {
     x
   })
   
-  # Model summaries
-  output$sp1_mod <- renderTable({
-    mod_tab <- read.csv(paste0(sp1_dir(), "/covariate_selection.csv"))
-    mod_tab |> group_by(component) |> filter(RMSE == min(RMSE)) |> dplyr::select(-species, -AIC)
-  })
-  output$sp2_mod <- renderTable({
-    mod_tab <- read.csv(paste0(sp2_dir(), "/covariate_selection.csv"))
-    mod_tab |> group_by(component) |> filter(RMSE == min(RMSE)) |> dplyr::select(-species, -AIC)
-  })
+  # Covariate effects
+  sp1_cov_tab <- reactive({
+    x <- read.csv(paste0(sp1_dir(), "/smoother_fits.csv"))
+    if (input$index == "Probability of occurrence") {
+      x <- filter(x, component == "binomial")
+    } else {
+      x <- filter(x, component == "tweedie")
+    }
+    x
+  }) 
+  sp2_cov_tab <- reactive({
+    x <- read.csv(paste0(sp2_dir(), "/smoother_fits.csv"))
+    if (input$index == "Probability of occurrence") {
+      x <- filter(x, component == "binomial")
+    } else {
+      x <- filter(x, component == "tweedie")
+    }
+    x
+  }) 
   
   ## Function to format data for species range summary plots, given mean and sd
   species_plotdata_sd <- function(data, var, sd, var_srvy) { #new
@@ -574,6 +583,68 @@ server <- function(input, output) {
     data
     
   }
+  
+  # Function to plot parital covariate effects
+  plot_smoothers <- function(data, y_lab) {
+    
+    data |>
+      filter(!(predictor == "pH_bottom5m" & (x < 7.5 | x > 8.2))) |> 
+      filter(!(predictor == "oxygen_bottom5m" & (x < 100 | x > 440))) |> 
+      mutate(predictor = factor(
+        predictor, 
+        levels = c("temp_bottom5m", "oxygen_bottom5m", "pH_bottom5m", "depth_m", "phi"),
+        labels = c("'temperature (°C)'", "'oxygen (mmol m'^-3*')'", "pH", "'depth (m)'", "'sediment size ('*phi*')'")
+      )) |>
+      ggplot(aes(x, fit, group = model)) +
+      geom_hline(yintercept = 0, linetype = "dashed", color = "grey60") +
+      geom_ribbon(aes(ymin = lower, ymax = upper, fill = weight), alpha = 0.5) +
+      geom_line(aes(color = weight)) +
+      facet_wrap( ~ predictor, scales = "free_x", strip.position = "bottom", nrow = 1, labeller = label_parsed) +
+      scale_color_gradientn(colors = RColorBrewer::brewer.pal(9, "Blues")[-1]) +
+      scale_fill_gradientn(colors = RColorBrewer::brewer.pal(9, "Blues")[-1]) +
+      guides(
+        fill = guide_colorbar(title.position = "top", title.hjust = 0.5, barwidth = unit(15, "lines")), 
+        color = guide_colorbar(title.position = "top", title.hjust = 0.5, barwidth = unit(15, "lines"))
+      ) +
+      theme(
+        strip.placement = "outside",
+        strip.background = element_blank(), 
+        strip.text = element_text(size = 14, color = "black"),
+        legend.position = "bottom",
+        legend.title = element_text(size = 12),
+        axis.title.x = element_blank()
+      )  + 
+      labs(y = y_lab, color = "model weight", fill = "model weight")
+    
+  }
+ 
+  # Covariate effect plots 
+  output$sp1_smooths <- renderPlot({
+    
+    if (input$index == "Probability of occurrence") {
+      y_lab <- "s(log-odds occurrence)"
+    } else {
+      y_lab <- "s(log CPUE)"
+    }
+    
+    plot_smoothers(sp1_cov_tab(), y_lab)
+    
+  })
+  output$sp2_smooths <- renderPlot({
+    
+    if (input$index == "Probability of occurrence") {
+      y_lab <- "s(log-odds occurrence)"
+    } else {
+      y_lab <- "s(log CPUE)"
+    }
+    
+    plot_smoothers(sp2_cov_tab(), y_lab)
+    
+  })
+  
+  # Spatially varying effects (pre-rendered)
+  output$sp1_svc <- renderImage(list(src = paste0(sp1_dir(), ifelse(input$index == "Estimated biomass", "/tweedie_SVC.png", "/binomial_SVC.png")), width = "100%"), deleteFile = FALSE)
+  output$sp2_svc <- renderImage(list(src = paste0(sp2_dir(), ifelse(input$index == "Estimated biomass", "/tweedie_SVC.png", "/binomial_SVC.png")), width = "100%"), deleteFile = FALSE)
   
   ## Function to format data for species range summary plots, given mean and lower / upper
   species_plotdata_ci <- function(data, var, lower, upper, var_srvy) { #new
@@ -671,11 +742,17 @@ server <- function(input, output) {
     
   })
   
-  output$sp1_novelty_binom <- renderPlot({
+  output$sp1_novelty <- renderPlot({
     
-    data <- sp1_summary() |> 
-      filter(sim %in% c("hindcast", sims())) |> 
-      dplyr::select(year, sim, scenario, y = mahalanobis_binom_mean)
+    if (input$index == "Estimated biomass") {
+      data <- sp1_summary() |> 
+        filter(sim %in% c("hindcast", sims())) |> 
+        dplyr::select(year, sim, scenario, y = mahalanobis_binom)
+    } else {
+      data <- sp1_summary() |> 
+        filter(sim %in% c("hindcast", sims())) |> 
+        dplyr::select(year, sim, scenario, y = mahalanobis_tweedie)
+    }
     
     if(any(input$ensemble == "Ensemble")) {
       
@@ -695,41 +772,13 @@ server <- function(input, output) {
       geom_line(aes(color = sim)) + 
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
-      labs(y = "Mahalanobis distance\n(bionomial component)")
-    
-  })
-  
-  output$sp1_novelty_pos <- renderPlot({
-    
-    data <- sp1_summary() |> 
-      filter(sim %in% c("hindcast", sims())) |> 
-      dplyr::select(year, sim, scenario, y = mahalanobis_pos_mean)
-    
-    if(any(input$ensemble == "Ensemble")) {
-      
-      plot_cols <- ens_cols[c(1, which(scenario_abr %in% scenario_abr[match(input$scenario, scenario_nm)]) + 1)]
-      
-      data <- data |> mutate(sim = scenario) |> group_by(sim, year) |> summarize(y = mean(y))
-      
-    } else {
-      
-      plot_cols <- sim_cols[which(sim_names %in% c("hindcast", sims()))]
-      
-    }
-    
-    data |> 
-      ggplot(aes(year, y)) +
-      annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
-      geom_line(aes(color = sim)) + 
-      scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
-      scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
-      labs(y = "Mahalanobis distance\n(lognormal component)")
+      labs(y = "Mahalanobis distance")
     
   })
   
   output$sp1_fit_pred <- renderImage(list(src = paste0(sp1_dir(), "/fitted_observed_map.png"), width = "100%"), deleteFile = FALSE)
   
-  output$sp1_proj_map <- renderImage(list(src = paste0(sp1_dir(), ifelse(input$index == "Estimated biomass", "/projection_2070-2079.png", "/projection_2070-2079_occurrence.png")), width = "100%"), deleteFile = FALSE)
+  output$sp1_proj_map <- renderImage(list(src = paste0(sp1_dir(), ifelse(input$index == "Estimated biomass", "/projection_biomass.png", "/projection_occurrence.png")), width = "100%"), deleteFile = FALSE)
   
   ## Plots for species 2
   output$sp2_northings <- renderPlot({
@@ -801,11 +850,18 @@ server <- function(input, output) {
     
   })
   
-  output$sp2_novelty_binom <- renderPlot({
+  output$sp2_novelty <- renderPlot({
     
-    data <- sp2_summary() |> 
-      filter(sim %in% c("hindcast", sims())) |> 
-      dplyr::select(year, sim, scenario, y = mahalanobis_binom_mean)
+    if (input$index == "Estimated biomass") {
+      data <- sp2_summary() |> 
+        filter(sim %in% c("hindcast", sims())) |> 
+        dplyr::select(year, sim, scenario, y = mahalanobis_binom)
+    } else {
+      data <- sp2_summary() |> 
+        filter(sim %in% c("hindcast", sims())) |> 
+        dplyr::select(year, sim, scenario, y = mahalanobis_tweedie)
+    }
+    
     
     if(any(input$ensemble == "Ensemble")) {
       
@@ -825,41 +881,13 @@ server <- function(input, output) {
       geom_line(aes(color = sim)) + 
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
-      labs(y = "Mahalanobis distance\n(binomial component)")
-    
-  })
-  
-  output$sp2_novelty_pos <- renderPlot({
-    
-    data <- sp2_summary() |> 
-      filter(sim %in% c("hindcast", sims())) |> 
-      dplyr::select(year, sim, scenario, y = mahalanobis_pos_mean)
-    
-    if(any(input$ensemble == "Ensemble")) {
-      
-      plot_cols <- ens_cols[c(1, which(scenario_abr %in% scenario_abr[match(input$scenario, scenario_nm)]) + 1)]
-      
-      data <- data |> mutate(sim = scenario) |> group_by(sim, year) |> summarize(y = mean(y))
-      
-    } else {
-      
-      plot_cols <- sim_cols[which(sim_names %in% c("hindcast", sims()))]
-      
-    }
-    
-    data |> 
-      ggplot(aes(year, y)) +
-      annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
-      geom_line(aes(color = sim)) + 
-      scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
-      scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
-      labs(y = "Mahalanobis distance\n(lognormal component)")
+      labs(y = "Mahalanobis distance")
     
   })
   
   output$sp2_fit_pred <- renderImage(list(src = paste0(sp2_dir(), "/fitted_observed_map.png"), width = "100%"), deleteFile = FALSE)
   
-  output$sp2_proj_map <- renderImage(list(src = paste0(sp2_dir(), ifelse(input$index == "Estimated biomass", "/projection_2070-2079.png", "/projection_2070-2079_occurrence.png")), width = "100%"), deleteFile = FALSE)
+  output$sp2_proj_map <- renderImage(list(src = paste0(sp2_dir(), ifelse(input$index == "Estimated biomass", "/projection_biomass.png", "/projection_occurrence.png")), width = "100%"), deleteFile = FALSE)
   
   output$downloadOverlap <- downloadHandler(
     filename = function() {

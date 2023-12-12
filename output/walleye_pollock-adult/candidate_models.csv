@@ -1,0 +1,9 @@
+"id","species","component","formula","AIC","dev.expl","AUC","biomass_cor","weight"
+1,"walleye pollock","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",7076.22515404885,0.196595745582699,0.821134615241614,NA,0.102024369125692
+1,"walleye pollock","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",245918.034625965,0.207163754603017,NA,0.243493445642558,0.151101999827092
+2,"walleye pollock","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",7174.73271603651,0.185370541185673,0.818728065828632,NA,0.0356175492273858
+2,"walleye pollock","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",246072.833697746,0.200059470686702,NA,0.240368945999902,0.132754000902479
+3,"walleye pollock","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",6150.7147574652,0.309065892504203,0.873487045787646,NA,0.480863053651158
+3,"walleye pollock","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",244254.97973258,0.282573822187624,NA,0.290490292459661,0.479121413329845
+4,"walleye pollock","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",6152.27902083913,0.309637776594139,0.874147577560522,NA,0.381495027995764
+4,"walleye pollock","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",244305.823703026,0.280398457886113,NA,0.287423305715849,0.237022585940584

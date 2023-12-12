@@ -1,0 +1,9 @@
+"id","species","component","formula","AIC","dev.expl","AUC","biomass_cor","weight"
+1,"snow crab","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",8077.39173310801,0.505456934490977,0.92834943378024,NA,0.153855776535396
+1,"snow crab","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",155911.676369775,0.301640284305788,NA,0.341098354194282,0.0494021663826815
+2,"snow crab","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",8237.29414464646,0.495577710318381,0.925533737177771,NA,0.118608466316803
+2,"snow crab","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",156331.896807483,0.283188883058341,NA,0.353981999901047,0.203942503154905
+3,"snow crab","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",7061.01711230705,0.571280270156532,0.945579436993343,NA,0.144809649107749
+3,"snow crab","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",151220.93175335,0.486426558900641,NA,0.43064735522788,0.312709112593254
+4,"snow crab","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",7020.07977896749,0.573808427612836,0.946416090665208,NA,0.582726108040052
+4,"snow crab","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",151196.886848495,0.487287588043906,NA,0.429589265438695,0.433946217869159

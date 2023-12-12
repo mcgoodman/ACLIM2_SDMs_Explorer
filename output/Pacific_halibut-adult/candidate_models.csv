@@ -1,0 +1,9 @@
+"id","species","component","formula","AIC","dev.expl","AUC","biomass_cor","weight"
+1,"Pacific halibut","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",15387.6322608254,0.159128866443598,0.748541331402556,NA,0.0565593043169297
+1,"Pacific halibut","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",129502.417309419,0.127219021814895,NA,0.245538108037209,0.0242336008563863
+2,"Pacific halibut","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",15512.1347622978,0.152347182939853,0.744923676027876,NA,0.0188258305934398
+2,"Pacific halibut","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",129578.032586343,0.122861156120508,NA,0.247574181387328,0.135232988595339
+3,"Pacific halibut","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",14341.9925543741,0.219993299635845,0.790821403455165,NA,0.319600061665464
+3,"Pacific halibut","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",128010.822358427,0.213346020960446,NA,0.341600384578466,0.604886980070026
+4,"Pacific halibut","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",14322.2498105297,0.221138916173438,0.791674184761722,NA,0.605014803424167
+4,"Pacific halibut","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",128081.861749086,0.209490442036739,NA,0.334969935322906,0.235646430478249

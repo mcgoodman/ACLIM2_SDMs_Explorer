@@ -1,0 +1,9 @@
+"id","species","component","formula","AIC","dev.expl","AUC","biomass_cor","weight"
+1,"Pacific cod","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",8153.20269813651,0.0932282640601569,0.716435389918811,NA,0.0740623297152918
+1,"Pacific cod","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",186046.208723085,0.0858358542140403,NA,0.157805912053109,0.112999730001748
+2,"Pacific cod","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",8106.52403319397,0.0986015486665198,0.719163025459388,NA,0.06919360724986
+2,"Pacific cod","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",185859.110863437,0.0955797823191931,NA,0.163425889487836,0.258885912829564
+3,"Pacific cod","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",7026.43439204957,0.226584373528951,0.826653870736079,NA,0.435890812896514
+3,"Pacific cod","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",184217.622897639,0.180546858462017,NA,0.205908169177341,0.213497056288981
+4,"Pacific cod","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",7063.64478247054,0.22245123998159,0.824761538411347,NA,0.420853250138334
+4,"Pacific cod","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",184221.127503833,0.180335935297079,NA,0.2101170466863,0.414617300879707

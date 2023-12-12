@@ -1,0 +1,9 @@
+"id","species","component","formula","AIC","dev.expl","AUC","biomass_cor","weight"
+1,"northern rock sole","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",6252.58331271354,0.256305294773855,0.848228758352402,NA,0.048045948225306
+1,"northern rock sole","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",125026.709308393,0.41098909378365,NA,0.359085869098944,0.320425668187006
+2,"northern rock sole","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",6234.17701185744,0.25849698009115,0.847637149648912,NA,0.0985860972692462
+2,"northern rock sole","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",124987.369798067,0.412170897557362,NA,0.351037196945244,0.0343117345901363
+3,"northern rock sole","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",5070.87701952796,0.405050403793493,0.905518211656329,NA,0.612838991165482
+3,"northern rock sole","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",124663.341564986,0.434415438041234,NA,0.391344367775534,0.342377338459023
+4,"northern rock sole","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",5117.38559002643,0.399780034874647,0.905393444775663,NA,0.240528963339965
+4,"northern rock sole","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",124626.742089126,0.436228763479465,NA,0.391142201639902,0.302885258763835
