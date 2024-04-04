@@ -1,9 +1,9 @@
-"id","species","component","formula","AIC","dev.expl","AUC","biomass_cor","weight"
-1,"walleye pollock","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",7076.22515404885,0.196595745582699,0.821134615241614,NA,0.102024369125692
-1,"walleye pollock","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",245918.034625965,0.207163754603017,NA,0.243493445642558,0.151101999827092
-2,"walleye pollock","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",7174.73271603651,0.185370541185673,0.818728065828632,NA,0.0356175492273858
-2,"walleye pollock","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",246072.833697746,0.200059470686702,NA,0.240368945999902,0.132754000902479
-3,"walleye pollock","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",6150.7147574652,0.309065892504203,0.873487045787646,NA,0.480863053651158
-3,"walleye pollock","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",244254.97973258,0.282573822187624,NA,0.290490292459661,0.479121413329845
-4,"walleye pollock","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",6152.27902083913,0.309637776594139,0.874147577560522,NA,0.381495027995764
-4,"walleye pollock","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",244305.823703026,0.280398457886113,NA,0.287423305715849,0.237022585940584
+"id","species","component","formula","AIC","dev.expl","AUC","biomass_pearson","biomass_spearman","weight"
+1,"walleye pollock","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",7137.90643400028,0.170105480844546,0.812645423728468,NA,NA,0.0273525617050931
+1,"walleye pollock","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",245209.546045832,0.242594844801932,NA,0.243517287813586,0.528824209457794,0.168499593472243
+2,"walleye pollock","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",7159.00099048311,0.167599781737694,0.807103602282586,NA,NA,0.00265785867944204
+2,"walleye pollock","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",245411.515459537,0.233634097797917,NA,0.238809900395528,0.52080723712894,0.0278794522461418
+3,"walleye pollock","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",6236.12710533713,0.281387145515631,0.864953734252233,NA,NA,0.668237270749075
+3,"walleye pollock","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",243406.296764419,0.321488297211698,NA,0.305610918668447,0.591626967985982,0.428734674928912
+4,"walleye pollock","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",6280.50731277345,0.275877205050215,0.862944150160278,NA,NA,0.30175230886639
+4,"walleye pollock","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",243508.017552113,0.317291258340941,NA,0.303742049792053,0.582449531318099,0.374886279352703

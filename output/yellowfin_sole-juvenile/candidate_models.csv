@@ -1,9 +1,9 @@
-"id","species","component","formula","AIC","dev.expl","AUC","biomass_cor","weight"
-1,"yellowfin sole","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",4530.99373742152,0.743214652580583,0.980288179673303,NA,0.0715089729227946
-1,"yellowfin sole","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",154645.309098548,0.673121517115586,NA,0.462969031713544,0.219738759117776
-2,"yellowfin sole","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",4462.14858188126,0.747300434291653,0.981283807774137,NA,0.288554465649091
-2,"yellowfin sole","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",154429.050119112,0.678783278591562,NA,0.468640701614639,0.148741309855834
-3,"yellowfin sole","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",3994.60907747686,0.776139596614936,0.98585673550646,NA,0.226632874538147
-3,"yellowfin sole","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",154575.837826449,0.677097052257097,NA,0.483838199584213,0.123221296130091
-4,"yellowfin sole","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",3979.27598583864,0.77700049337462,0.986008684319313,NA,0.413303686889968
-4,"yellowfin sole","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",154160.155333715,0.687639007619092,NA,0.497675253102123,0.508298634896299
+"id","species","component","formula","AIC","dev.expl","AUC","biomass_pearson","biomass_spearman","weight"
+1,"yellowfin sole","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",4418.14065784275,0.759655456627124,0.981663075769007,NA,NA,0.0157762462791288
+1,"yellowfin sole","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",152348.966522842,0.7066800077568,NA,0.565625944016458,0.873554187812895,0.0388296801818958
+2,"yellowfin sole","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",4401.08661775714,0.760530101299783,0.981839941418387,NA,NA,0.435311369852961
+2,"yellowfin sole","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",152287.004396775,0.708526503993203,NA,0.56991836822445,0.873455224823715,0.385641790338477
+3,"yellowfin sole","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",4108.23818667529,0.778169541910525,0.985069442473433,NA,NA,0.268898751686613
+3,"yellowfin sole","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",151555.940145543,0.726766504872321,NA,0.588235308304668,0.893024787880691,0.126357973045885
+4,"yellowfin sole","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",4121.09990547866,0.777510373778218,0.984994995610365,NA,NA,0.280013632181298
+4,"yellowfin sole","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",151608.529050006,0.725815377703589,NA,0.590038700860068,0.893004010266838,0.449170556433743

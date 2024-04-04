@@ -1,9 +1,9 @@
-"id","species","component","formula","AIC","dev.expl","AUC","biomass_cor","weight"
-1,"Pacific cod","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",8153.20269813651,0.0932282640601569,0.716435389918811,NA,0.0740623297152918
-1,"Pacific cod","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",186046.208723085,0.0858358542140403,NA,0.157805912053109,0.112999730001748
-2,"Pacific cod","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",8106.52403319397,0.0986015486665198,0.719163025459388,NA,0.06919360724986
-2,"Pacific cod","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",185859.110863437,0.0955797823191931,NA,0.163425889487836,0.258885912829564
-3,"Pacific cod","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",7026.43439204957,0.226584373528951,0.826653870736079,NA,0.435890812896514
-3,"Pacific cod","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",184217.622897639,0.180546858462017,NA,0.205908169177341,0.213497056288981
-4,"Pacific cod","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",7063.64478247054,0.22245123998159,0.824761538411347,NA,0.420853250138334
-4,"Pacific cod","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",184221.127503833,0.180335935297079,NA,0.2101170466863,0.414617300879707
+"id","species","component","formula","AIC","dev.expl","AUC","biomass_pearson","biomass_spearman","weight"
+1,"Pacific cod","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",8175.41597696222,0.090457476503273,0.708934430646459,NA,NA,0.0209001336979402
+1,"Pacific cod","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",184366.892137341,0.14426930525094,NA,0.23383524342129,0.343365584217833,0.0542495169000128
+2,"Pacific cod","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",8121.30975789356,0.0966381735459045,0.710690509843239,NA,NA,0.0386085362658131
+2,"Pacific cod","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",184175.567848492,0.153850432200255,NA,0.235890172533599,0.373378892730795,0.159969113180641
+3,"Pacific cod","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",7212.95309669794,0.204074883323749,0.811600825901652,NA,NA,0.914461945229559
+3,"Pacific cod","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",182708.739807032,0.227840594976762,NA,0.282360820424508,0.501728276216559,0.472460453957678
+4,"Pacific cod","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",7227.90736249312,0.202216413720914,0.809935340789486,NA,NA,0.026029384806688
+4,"Pacific cod","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",182656.849191434,0.230355039205434,NA,0.282591050928718,0.505766503380968,0.313320915961668

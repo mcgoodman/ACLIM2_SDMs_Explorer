@@ -309,16 +309,16 @@ server <- function(input, output) {
       ggplot(aes(year, mean)) + 
       geom_ribbon(aes(ymin = X2.5., ymax = X97.5., fill = sim), alpha = 0.5) + 
       geom_line(aes(color = sim)) + 
-      annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
-      annotate("segment", x = 2020, y = ifelse(input$y_axis, 0, min(data[["X2.5."]])), 
-               xend = 2035, yend = ifelse(input$y_axis, 0, min(data[["X2.5."]])),
+      annotate("rect", xmin = 1982, xmax = 2022, ymin = -Inf, ymax = Inf, alpha = .2) +
+      annotate("segment", x = 2023, y = ifelse(input$y_axis, 0, min(data[["X2.5."]])), 
+               xend = 2038, yend = ifelse(input$y_axis, 0, min(data[["X2.5."]])),
                arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
-      annotate("segment", x = 2018, y = ifelse(input$y_axis, 0, min(data[["X2.5."]])), 
-               xend = 2003, yend = ifelse(input$y_axis, 0, min(data[["X2.5."]])),
+      annotate("segment", x = 2021, y = ifelse(input$y_axis, 0, min(data[["X2.5."]])), 
+               xend = 2006, yend = ifelse(input$y_axis, 0, min(data[["X2.5."]])),
                arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
-      annotate("text", x = 2018, y = ifelse(input$y_axis, 0, min(data[["X2.5."]])) + 0.025 * ifelse(input$y_axis, 1, (max(data[["X97.5."]]) - min(data[["X2.5."]]))), 
+      annotate("text", x = 2021, y = ifelse(input$y_axis, 0, min(data[["X2.5."]])) + 0.025 * ifelse(input$y_axis, 1, (max(data[["X97.5."]]) - min(data[["X2.5."]]))), 
                label = "hindcast", hjust = 1, vjust = 0, size = 5) +
-      annotate("text", x = 2020, y = ifelse(input$y_axis, 0, min(data[["X2.5."]])) + 0.025 * ifelse(input$y_axis, 1, (max(data[["X97.5."]]) - min(data[["X2.5."]]))),
+      annotate("text", x = 2023, y = ifelse(input$y_axis, 0, min(data[["X2.5."]])) + 0.025 * ifelse(input$y_axis, 1, (max(data[["X97.5."]]) - min(data[["X2.5."]]))),
                label = "forecast", hjust = 0, vjust = 0, size = 5) +
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
@@ -419,7 +419,7 @@ server <- function(input, output) {
       paste(
         "Each of the below overlap metrics varies between 0 and 1, with 0", 
         "indicating no overlap and 1 indicating complete overlap.",
-        "The years containing groundfish survey data (1982-2019) are shaded."
+        "The years containing groundfish survey data (1982-2022) are shaded."
       )
     } else {
       paste(
@@ -427,7 +427,7 @@ server <- function(input, output) {
         "indicating no overlap and 1 indicating complete overlap, and each is",
         "invariant under linear transformation, i.e., impacted only by the relative biomass",
         "distributions of each species, not by the aggregate sum biomass in a given year.",
-        "The years containing groundfish survey data (1982-2019) are shaded."
+        "The years containing groundfish survey data (1982-2022) are shaded."
       )
     }
   )
@@ -684,7 +684,7 @@ server <- function(input, output) {
     sp1_summary() |> 
       species_plotdata_sd(northings_mean, northings_sd, northings_survey_mean) |> 
       ggplot(aes(year, y)) + 
-      annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
+      annotate("rect", xmin = 1982, xmax = 2022, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_ribbon(aes(ymin = lower, ymax = upper, fill = sim), alpha = 0.5) +
       geom_line(aes(color = sim)) +
       geom_line(aes(year, centroid_northings), data = sp1_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
@@ -707,7 +707,7 @@ server <- function(input, output) {
     sp1_summary() |> 
       species_plotdata_sd(eastings_mean, eastings_sd, eastings_survey_mean) |> 
       ggplot(aes(year, y)) + 
-      annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
+      annotate("rect", xmin = 1982, xmax = 2022, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_ribbon(aes(ymin = lower, ymax = upper, fill = sim), alpha = 0.5) +
       geom_line(aes(color = sim)) + 
       geom_line(aes(year, centroid_eastings), data = sp1_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
@@ -730,7 +730,7 @@ server <- function(input, output) {
     sp1_summary() |> 
       species_plotdata_ci(area_occupied_mean, area_occupied_2.5, area_occupied_97.5, area_occupied_survey_mean) |> 
       ggplot(aes(year, y)) +
-      annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
+      annotate("rect", xmin = 1982, xmax = 2022, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_ribbon(aes(ymin = lower, ymax = upper, fill = sim), alpha = 0.5) +
       geom_line(aes(color = sim)) + 
       geom_line(aes(year, area_occupied), data = sp1_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
@@ -768,7 +768,7 @@ server <- function(input, output) {
     
     data |> 
       ggplot(aes(year, y)) +
-      annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
+      annotate("rect", xmin = 1982, xmax = 2022, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_line(aes(color = sim)) + 
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
@@ -792,7 +792,7 @@ server <- function(input, output) {
     sp2_summary() |> 
       species_plotdata_sd(northings_mean, northings_sd, northings_survey_mean) |> 
       ggplot(aes(year, y)) + 
-      annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
+      annotate("rect", xmin = 1982, xmax = 2022, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_ribbon(aes(ymin = lower, ymax = upper, fill = sim), alpha = 0.5) +
       geom_line(aes(color = sim)) +
       geom_line(aes(year, centroid_northings), data = sp2_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
@@ -815,7 +815,7 @@ server <- function(input, output) {
     sp2_summary() |> 
       species_plotdata_sd(eastings_mean, eastings_sd, eastings_survey_mean) |> 
       ggplot(aes(year, y)) + 
-      annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
+      annotate("rect", xmin = 1982, xmax = 2022, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_ribbon(aes(ymin = lower, ymax = upper, fill = sim), alpha = 0.5) +
       geom_line(aes(color = sim)) + 
       geom_line(aes(year, centroid_eastings), data = sp2_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
@@ -838,7 +838,7 @@ server <- function(input, output) {
     sp2_summary() |> 
       species_plotdata_ci(area_occupied_mean, area_occupied_2.5, area_occupied_97.5, area_occupied_survey_mean) |> 
       ggplot(aes(year, y)) +
-      annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
+      annotate("rect", xmin = 1982, xmax = 2022, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_ribbon(aes(ymin = lower, ymax = upper, fill = sim), alpha = 0.5) +
       geom_line(aes(color = sim)) + 
       geom_line(aes(year, area_occupied), data = sp2_empirical(), inherit.aes = FALSE, alpha = 0.5, color = "darkorchid1") +
@@ -877,7 +877,7 @@ server <- function(input, output) {
     
     data |> 
       ggplot(aes(year, y)) +
-      annotate("rect", xmin = 1982, xmax = 2019, ymin = -Inf, ymax = Inf, alpha = .2) +
+      annotate("rect", xmin = 1982, xmax = 2022, ymin = -Inf, ymax = Inf, alpha = .2) +
       geom_line(aes(color = sim)) + 
       scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
       scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 

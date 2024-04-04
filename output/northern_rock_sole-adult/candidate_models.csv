@@ -1,9 +1,9 @@
-"id","species","component","formula","AIC","dev.expl","AUC","biomass_cor","weight"
-1,"northern rock sole","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",6252.58331271354,0.256305294773855,0.848228758352402,NA,0.048045948225306
-1,"northern rock sole","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",125026.709308393,0.41098909378365,NA,0.359085869098944,0.320425668187006
-2,"northern rock sole","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",6234.17701185744,0.25849698009115,0.847637149648912,NA,0.0985860972692462
-2,"northern rock sole","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",124987.369798067,0.412170897557362,NA,0.351037196945244,0.0343117345901363
-3,"northern rock sole","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",5070.87701952796,0.405050403793493,0.905518211656329,NA,0.612838991165482
-3,"northern rock sole","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",124663.341564986,0.434415438041234,NA,0.391344367775534,0.342377338459023
-4,"northern rock sole","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",5117.38559002643,0.399780034874647,0.905393444775663,NA,0.240528963339965
-4,"northern rock sole","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",124626.742089126,0.436228763479465,NA,0.391142201639902,0.302885258763835
+"id","species","component","formula","AIC","dev.expl","AUC","biomass_pearson","biomass_spearman","weight"
+1,"northern rock sole","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",6117.54700657908,0.290695091772736,0.848671326927368,NA,NA,0.0924471249766487
+1,"northern rock sole","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",123933.512315761,0.438415367314251,NA,0.336336515166874,0.730739471461331,0.200160446100744
+2,"northern rock sole","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",6094.8640787513,0.293116523359974,0.848734475137285,NA,NA,0.0432326038481203
+2,"northern rock sole","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",123947.069931858,0.437104203053486,NA,0.33599699185988,0.734961069860456,0.0556860176836254
+3,"northern rock sole","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",5191.43051809962,0.404798754144869,0.897432611107227,NA,NA,0.78987262049261
+3,"northern rock sole","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",123351.691170477,0.472893484673824,NA,0.387086895498841,0.733463539762016,0.362582337430826
+4,"northern rock sole","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",5240.06441483274,0.399138077505128,0.896153436790112,NA,NA,0.0744476506826208
+4,"northern rock sole","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",123310.309649595,0.475247499726951,NA,0.387725107110034,0.733901265705626,0.381571198784805

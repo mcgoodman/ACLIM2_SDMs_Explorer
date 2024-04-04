@@ -1,9 +1,9 @@
-"id","species","component","formula","AIC","dev.expl","AUC","biomass_cor","weight"
-1,"red king crab","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",8334.85983639302,0.440252629439391,0.920058023567709,NA,0.0942892634744642
-1,"red king crab","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",55281.6304668061,0.579833881555089,NA,0.327829093855104,0.231996744511977
-2,"red king crab","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",8334.71103454483,0.440437139771349,0.920436567733754,NA,0.0469363139947836
-2,"red king crab","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",55227.1714637308,0.58325333511614,NA,0.327290707085356,0.199787082260072
-3,"red king crab","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",6692.11073658187,0.554686772765323,0.947796131099783,NA,0.358004928631213
-3,"red king crab","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",53413.7159230338,0.687621880943602,NA,0.379215276532121,0.272053177613441
-4,"red king crab","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",6711.02980243205,0.553255636907387,0.947336717640014,NA,0.500769493899539
-4,"red king crab","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",53484.2140121587,0.684351058060754,NA,0.378312920914513,0.296162995614509
+"id","species","component","formula","AIC","dev.expl","AUC","biomass_pearson","biomass_spearman","weight"
+1,"red king crab","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",8112.61929879348,0.467137219997382,0.922376112259515,NA,NA,0.169597092400981
+1,"red king crab","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",55054.3999563656,0.59852552562725,NA,0.337787173003714,0.596902377818488,0.232091988940942
+2,"red king crab","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",8115.5983611627,0.4669668836973,0.922197267650468,NA,NA,0.00875801976170365
+2,"red king crab","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",54995.5944466142,0.602145729822775,NA,0.340374405320612,0.597817641386337,0.123836361295605
+3,"red king crab","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",6730.69353625177,0.561347885526558,0.945232495433398,NA,NA,0.409138596359594
+3,"red king crab","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",52973.9250659285,0.712103688032587,NA,0.399566941482255,0.651411348122505,0.398610262338408
+4,"red king crab","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",6746.76142713391,0.560247617059675,0.944694577080507,NA,NA,0.412506291477721
+4,"red king crab","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",53046.9725740351,0.70891723547684,NA,0.397077024875557,0.650227454803475,0.245461387425045

@@ -1,9 +1,9 @@
-"id","species","component","formula","AIC","dev.expl","AUC","biomass_cor","weight"
-1,"arrowtooth flounder","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",7147.72407715401,0.603725595472264,0.953840843742437,NA,0.0160740836617534
-1,"arrowtooth flounder","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",97217.2399300776,0.635742704263801,NA,0.541698619985114,0.109068706469224
-2,"arrowtooth flounder","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",6815.12634084163,0.62234377327234,0.958468478117826,NA,0.103381870680217
-2,"arrowtooth flounder","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",96715.1056881539,0.653311491690576,NA,0.540900559963908,0.091105280738471
-3,"arrowtooth flounder","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",6373.85840731904,0.650440623187417,0.964299074171678,NA,0.100734265973941
-3,"arrowtooth flounder","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",94593.7330448912,0.725197572184073,NA,0.660777773205179,0.466150157125156
-4,"arrowtooth flounder","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",6034.15936250142,0.669352961954149,0.968382714580527,NA,0.779809779684088
-4,"arrowtooth flounder","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",94177.8122737189,0.73697414590745,NA,0.655283639781039,0.33367585566715
+"id","species","component","formula","AIC","dev.expl","AUC","biomass_pearson","biomass_spearman","weight"
+1,"arrowtooth flounder","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",7420.87138296272,0.579630112650408,0.95054325761532,NA,NA,0.000986912659546538
+1,"arrowtooth flounder","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",97386.5437402266,0.630198130953873,NA,0.535873220924026,0.820077078519278,0.0722048462307529
+2,"arrowtooth flounder","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",7038.52994116212,0.60153465958865,0.955569417198353,NA,NA,0.0242150797433693
+2,"arrowtooth flounder","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(depth_m,      k = 3) + s(phi, k = 3)",96562.6758695867,0.659214546064916,NA,0.559958133362881,0.823153908603688,0.14652493738002
+3,"arrowtooth flounder","binomial","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",6342.79524348539,0.643977219256027,0.963776306909634,NA,NA,0.131060404506291
+3,"arrowtooth flounder","tweedie","~s(temp_bottom5m, k = 3) + s(oxygen_bottom5m, k = 3) + s(X, Y,      k = 20) + s(X, Y, by = cold_pool_2C, k = 20)",93364.7816297735,0.760017398218489,NA,0.649369017431409,0.842970703775107,0.618515726430316
+4,"arrowtooth flounder","binomial","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",6060.57711083069,0.65964863425416,0.967171559815458,NA,NA,0.843737603090793
+4,"arrowtooth flounder","tweedie","~s(temp_bottom5m, k = 3) + s(pH_bottom5m, k = 3) + s(X, Y, k = 20) +      s(X, Y, by = cold_pool_2C, k = 20)",93182.5935010534,0.764610313262542,NA,0.645891569279489,0.844572892419972,0.16275448995891
