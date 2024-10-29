@@ -7,10 +7,10 @@ require("shinythemes")
 
 ## Read in overlap data, extract species that estimates are available for
 overlap <- read.csv("output/overlap_summary.csv")
-overlap$bin1[is.na(overlap$bin1)] <- "all"
-overlap$bin2[is.na(overlap$bin2)] <- "all"
-species1 <- unique(overlap$species1)
-species2 <- unique(overlap$species2)
+overlap$pred_bin[is.na(overlap$pred_bin)] <- "all"
+overlap$prey_bin[is.na(overlap$prey_bin)] <- "all"
+pred <- unique(overlap$pred)
+prey <- unique(overlap$prey)
 
 ## Options for climate models / scenarios
 models <- c("CESM", "GFDL", "MIROC")
@@ -129,19 +129,17 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       selectInput(
-        inputId = "sp1", 
-        label = "Species 1", 
-        choices = species1, 
-        selected = "arrowtooth flounder"
+        inputId = "pred", 
+        label = "Predator", 
+        choices = paste(pred, "(adult)"), 
+        selected = "arrowtooth flounder (adult)"
       ), 
       selectInput(
-        inputId = "sp2", 
-        label = "Species 2",
-        choices = species1,
-        selected = "walleye pollock"
+        inputId = "prey", 
+        label = "Prey",
+        choices = paste(prey, ifelse(grepl("crab", prey), "(all)", "(juv.)")),
+        selected = "walleye pollock (juv.)"
       ),
-      uiOutput("bin1"), 
-      uiOutput("bin2"),
       shinyWidgets::radioGroupButtons(
         inputId = "index", 
         label = "Compute overlap indices using", 
@@ -177,19 +175,25 @@ ui <- fluidPage(
                )
         )
       ), 
+      shinyWidgets::radioGroupButtons(
+        inputId = "plot_type", 
+        label = "Overlap plot type", 
+        choices = c("Annual", "Decadal mean", "Smoothed trend"), 
+        justified = TRUE
+      ), 
       h5(HTML("<b>Download output<b>")),
-      helpText("Contact Maurice Goodman (goodman3@stanford.edu) for other outputs"),
+      helpText("Contact Maurice Goodman (goodman.maurice@gmail.com) for other outputs"),
       fluidRow(
         column(4, downloadButton('downloadOverlap', 'Overlap', style = "width:100%;")), 
-        column(4, downloadButton('downloadSp1', 'Species 1', style = "width:100%;")), 
-        column(4, downloadButton('downloadSp2', 'Species 2', style = "width:100%;"))
+        column(4, downloadButton('downloadSp1', 'Predator', style = "width:100%;")), 
+        column(4, downloadButton('downloadSp2', 'Prey', style = "width:100%;"))
       )
     ),
     
     # Show a plot of the generated distribution
     mainPanel(
       tabsetPanel(
-        tabPanel("Overlap", style = "background-color: #ffffff;", fluidPage(
+        tabPanel("Predator-prey overlap", style = "background-color: #ffffff;", fluidPage(
           h2("Background"),
           p(paste(
             "This interface displays fitted means and confidence intervals from SDMs built for a suite", 
@@ -209,6 +213,10 @@ ui <- fluidPage(
             "models are used) or expected biomass (from the Tweedie models). The overlap indices computed from these products", 
             "differ: see below for descriptions."
           )),
+          p(paste(
+            "Note: All aggregate statistics (ensembles, decadal means, smoothers) are computed in an ad-hoc way", 
+            "for visualization purposes only."   
+          )),
           h2("Spatial overlap"),
           p(textOutput("overlap_background")),
           h4(textOutput("overlap_title1")),
@@ -217,28 +225,32 @@ ui <- fluidPage(
           fluidPage(
             fluidRow(
               div(
-                shinyWidgets::materialSwitch("y_axis", "Y-axis: 0-1", value = TRUE, right = TRUE, inline = TRUE), 
+                shinyWidgets::materialSwitch("y_axis", "Y-axis: 0-1", value = FALSE, right = TRUE, inline = TRUE), 
                 style = "position: absolute; right: 0; padding: 1% 2%; z-index: 1;"
               )), 
             plotOutput("overlap_plot1")
           ),
+          h4(textOutput("overlap_title2")), 
+          uiOutput("overlap_math2"),
+          p(textOutput("overlap_description2")), 
+          plotOutput("overlap_plot2"),
           h4("Bhattacharyya's coefficient"),
-          withMathJax("$$\\sum \\sqrt{p_x p_y}$$"),
+          withMathJax("$$\\sum \\sqrt{p_{prey} p_{pred}}$$"),
           p(paste(
             "Bhattacharyya's coefficient is a metric of similarity in the fine-scale spatial distributions",
             "of two species:"
           )),
-          plotOutput("overlap_plot2"),
+          plotOutput("overlap_plot3"),
           h4("Global index of collocation"),
-          withMathJax("$$\\frac{1 - \\Delta CG_{x, y}^2}{\\Delta CG_{x,y}^2 + I_x + I_y}$$"), 
+          withMathJax("$$\\frac{1 - \\Delta CG_{prey, pred}^2}{\\Delta CG_{prey, pred}^2 + I_{prey} + I_{pred}}$$"), 
           p(paste(
             "The global index of collocation is a measure of broad-scale geographic similarity in two species",
             "distributions, as a function of each species center of gravity (CG) and dispersion (I):"
           )),
-          plotOutput("overlap_plot3"),
+          plotOutput("overlap_plot4"),
           p("Overlap formulas and definitions following Carroll et al. (2019).")
         )), 
-        tabPanel("Species 1", style = "background-color: #ffffff;", fluidPage(
+        tabPanel("Predator distribution", style = "background-color: #ffffff;", fluidPage(
           h2("Covariate effects"),
           p(description$models),
           plotOutput("sp1_smooths"),
@@ -262,7 +274,7 @@ ui <- fluidPage(
           p(description$proj_map),
           imageOutput("sp1_proj_map", height = "100%")
         )), 
-        tabPanel("Species 2", style = "background-color: #ffffff;", fluidPage(
+        tabPanel("Prey distribution", style = "background-color: #ffffff;", fluidPage(
           h2("Covariate effects"),
           p(description$models),
           plotOutput("sp2_smooths"),
@@ -295,7 +307,7 @@ ui <- fluidPage(
 server <- function(input, output) {
 
   ## Function to plot spatial overlap
-  plot_overlap <- function(data, overlap_index, ylab, plot_sims) { 
+  plot_overlap <- function(data, overlap_index, ylab, plot_sims, responsive_y = TRUE) { 
     
     data <- data |> filter(index == overlap_index)
     
@@ -305,74 +317,94 @@ server <- function(input, output) {
       plot_cols <- sim_cols[which(sim_names %in% plot_sims)]
     }
     
-    data |> 
-      ggplot(aes(year, mean)) + 
-      geom_ribbon(aes(ymin = X2.5., ymax = X97.5., fill = sim), alpha = 0.5) + 
-      geom_line(aes(color = sim)) + 
-      annotate("rect", xmin = 1982, xmax = 2022, ymin = -Inf, ymax = Inf, alpha = .2) +
-      annotate("segment", x = 2023, y = ifelse(input$y_axis, 0, min(data[["X2.5."]])), 
-               xend = 2038, yend = ifelse(input$y_axis, 0, min(data[["X2.5."]])),
-               arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
-      annotate("segment", x = 2021, y = ifelse(input$y_axis, 0, min(data[["X2.5."]])), 
-               xend = 2006, yend = ifelse(input$y_axis, 0, min(data[["X2.5."]])),
-               arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
-      annotate("text", x = 2021, y = ifelse(input$y_axis, 0, min(data[["X2.5."]])) + 0.025 * ifelse(input$y_axis, 1, (max(data[["X97.5."]]) - min(data[["X2.5."]]))), 
-               label = "hindcast", hjust = 1, vjust = 0, size = 5) +
-      annotate("text", x = 2023, y = ifelse(input$y_axis, 0, min(data[["X2.5."]])) + 0.025 * ifelse(input$y_axis, 1, (max(data[["X97.5."]]) - min(data[["X2.5."]]))),
-               label = "forecast", hjust = 0, vjust = 0, size = 5) +
-      scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
-      scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
-      scale_fill_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + {
-        if (input$y_axis) scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2))
-      } +
-      labs(y = ylab)
+    if (input$plot_type == "Decadal mean") {
+      
+      data <- data |> 
+        mutate(year = floor(year/10) * 10 + 5) |> 
+        group_by(year, sim) |>
+        summarize(mean = mean(mean), X2.5. = mean(X2.5.), X97.5. = mean(X97.5.)) |> 
+        ungroup()
+      
+      data$mean[data$sim != "hindcast" & data$year == 2025] <- data$mean[data$sim == "hindcast" & data$year == 2025]
+      data$X2.5.[data$sim != "hindcast" & data$year == 2025] <- data$X2.5.[data$sim == "hindcast" & data$year == 2025]
+      data$X97.5.[data$sim != "hindcast" & data$year == 2025] <- data$X97.5.[data$sim == "hindcast" & data$year == 2025]
+      
+      data |> 
+        ggplot(aes(year, mean)) + 
+        geom_ribbon(aes(ymin = X2.5., ymax = X97.5., fill = sim), alpha = 0.5) + 
+        geom_line(aes(color = sim)) + 
+        geom_point(aes(color = sim)) + 
+        annotate("rect", xmin = 1982, xmax = 2022, ymin = -Inf, ymax = Inf, alpha = .2) +
+        annotate("segment", x = 2023, y = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])), 
+                 xend = 2038, yend = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])),
+                 arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+        annotate("segment", x = 2021, y = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])), 
+                 xend = 2006, yend = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])),
+                 arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+        annotate("text", x = 2021, y = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])) + 0.025 * ifelse(input$y_axis & responsive_y, 1, (max(data[["X97.5."]]) - min(data[["X2.5."]]))), 
+                 label = "hindcast", hjust = 1, vjust = 0, size = 5) +
+        annotate("text", x = 2023, y = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])) + 0.025 * ifelse(input$y_axis & responsive_y, 1, (max(data[["X97.5."]]) - min(data[["X2.5."]]))),
+                 label = "forecast", hjust = 0, vjust = 0, size = 5) +
+        scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
+        scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
+        scale_fill_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + {
+          if (input$y_axis & responsive_y) scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2))
+        } +
+        labs(y = ylab)
+      
+    } else if (input$plot_type == "Smoothed trend") {
+      
+      range <- (max(data$year) - min(data$year))
+      
+      data |> 
+        ggplot(aes(year, mean)) + 
+        stat_smooth(geom = "ribbon", aes(ymin = X2.5., ymax = X97.5., fill = sim, group = sim), alpha = 0.5, method = "loess", span = 0.5) + 
+        stat_smooth(geom = "line", aes(color = sim, group = sim), method = "loess", span = 0.5) + 
+        annotate("rect", xmin = 1982, xmax = 2022, ymin = -Inf, ymax = Inf, alpha = .2) +
+        annotate("segment", x = 2023, y = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])), 
+                 xend = 2038, yend = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])),
+                 arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+        annotate("segment", x = 2021, y = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])), 
+                 xend = 2006, yend = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])),
+                 arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+        annotate("text", x = 2021, y = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])) + 0.025 * ifelse(input$y_axis & responsive_y, 1, (max(data[["X97.5."]]) - min(data[["X2.5."]]))), 
+                 label = "hindcast", hjust = 1, vjust = 0, size = 5) +
+        annotate("text", x = 2023, y = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])) + 0.025 * ifelse(input$y_axis & responsive_y, 1, (max(data[["X97.5."]]) - min(data[["X2.5."]]))),
+                 label = "forecast", hjust = 0, vjust = 0, size = 5) +
+        scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
+        scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
+        scale_fill_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + {
+          if (input$y_axis & responsive_y) scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2))
+        } +
+        labs(y = ylab)
+      
+    } else {
+      
+      data |> 
+        ggplot(aes(year, mean)) + 
+        geom_ribbon(aes(ymin = X2.5., ymax = X97.5., fill = sim), alpha = 0.5) + 
+        geom_line(aes(color = sim)) + 
+        annotate("rect", xmin = 1982, xmax = 2022, ymin = -Inf, ymax = Inf, alpha = .2) +
+        annotate("segment", x = 2023, y = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])), 
+                 xend = 2038, yend = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])),
+                 arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+        annotate("segment", x = 2021, y = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])), 
+                 xend = 2006, yend = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])),
+                 arrow = arrow(type = "closed", length = unit(0.02, "npc"))) +
+        annotate("text", x = 2021, y = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])) + 0.025 * ifelse(input$y_axis & responsive_y, 1, (max(data[["X97.5."]]) - min(data[["X2.5."]]))), 
+                 label = "hindcast", hjust = 1, vjust = 0, size = 5) +
+        annotate("text", x = 2023, y = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])) + 0.025 * ifelse(input$y_axis & responsive_y, 1, (max(data[["X97.5."]]) - min(data[["X2.5."]]))),
+                 label = "forecast", hjust = 0, vjust = 0, size = 5) +
+        scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
+        scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
+        scale_fill_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + {
+          if (input$y_axis & responsive_y) scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2))
+        } +
+        labs(y = ylab)
+      
+    }
     
   }
-   
-  #output$sp1_bins <- reactive(input$sp1)
-  sp1_bins <- reactive({
-    unique(c(
-      unique(overlap$bin1[overlap$species1 == input$sp1]), 
-      unique(overlap$bin2[overlap$species2 == input$sp1])
-    ))
-  })
-  
-  output$bin1 <- renderUI({
-    
-    if (length(sp1_bins()) == 0) {
-      fluidPage()
-    } else {
-      selectInput(
-        inputId = "bin1", 
-        "Species 1 life stage", 
-        sp1_bins(), 
-        selected = sp1_bins()[1]
-      )
-    }
-    
-  })
-  
-  sp2_bins <- reactive({
-    unique(c(
-      unique(overlap$bin1[overlap$species1 == input$sp2]), 
-      unique(overlap$bin2[overlap$species2 == input$sp2])
-    ))
-  })
-  
-  output$bin2 <- renderUI(
-    
-    if (length(sp2_bins()) == 0) {
-      fluidPage()
-    } else {
-      selectInput(
-        inputId = "bin2", 
-        "Species 2 life stage", 
-        sp2_bins(), 
-        selected = ifelse(length(sp2_bins()) > 1, sp2_bins()[2], sp2_bins()[1])
-      )
-    }
-    
-  )
   
   sims <- reactive({
     scenarios <- scenario_abr[match(input$scenario, scenario_nm)]
@@ -381,30 +413,16 @@ server <- function(input, output) {
   
   plot_data <- reactive({
     
-    if (any(overlap$species1 == input$sp1 & overlap$bin1 == input$bin1 & 
-            overlap$species2 == input$sp2 & overlap$bin2 == input$bin2)) {
-      plot_data <- overlap |> 
-        filter(
-          species1 == input$sp1 &
-            species2 == input$sp2 &
-            bin1 == input$bin1 & 
-            bin2 == input$bin2 &
-            sim %in% c("hindcast", sims()) 
-        )
-    } else {
-      plot_data <- overlap |> 
-        filter(
-          species1 == input$sp2 &
-            species2 == input$sp1 &
-            bin1 == input$bin2 & 
-            bin2 == input$bin1 &
-            sim %in% c("hindcast", sims())
-        ) 
-    }
+    plot_data <- overlap |> 
+      filter(
+        pred == gsub(" (adult)", "", input$pred, fixed = TRUE) &
+          prey == gsub(" (juv.)", "", gsub(" (all)", "", input$prey, fixed = TRUE), fixed = TRUE) & 
+          sim %in% c("hindcast", sims()) 
+      )
     
     if (any(input$ensemble == "Ensemble")) {
       plot_data <- plot_data |> mutate(sim = scenario) |> group_by(sim, year, index) |> 
-        summarize(mean = mean(mean), X2.5. = min(X2.5.), X97.5. = max(X97.5.))
+        summarize(mean = mean(mean), X2.5. = mean(X2.5.), X97.5. = mean(X97.5.))
       
     } else {
       plot_data <- plot_data |> mutate(sim = factor(sim, levels = sim_names))
@@ -440,12 +458,20 @@ server <- function(input, output) {
     }
   )
   
+  output$overlap_title2 <- reactive(
+    if(input$index == "Probability of occurrence") {
+      "Range Overlap"
+    } else {
+      "AB Ratio"
+    }
+  )
+  
+  
   output$overlap_description1 <- reactive(
     if(input$index == "Probability of occurrence") {
       paste(
         "Area overlap is a simple measure of the proportion of the Eastern Bering Sea (EBS + NBS)",
-        "survey region that we expect both species to occur together, i.e., for which the estimated",
-        "probability of occurrence is greater than 0.5."
+        "survey region that we expect both species to occur together."
       )
     } else {
       paste(
@@ -455,11 +481,34 @@ server <- function(input, output) {
     }
   )
   
+  output$overlap_description2 <- reactive(
+    if(input$index == "Probability of occurrence") {
+      paste(
+        "Range overlap measured the proportion of a prey's range in which a predator is expected to",
+        "co-occur with it, i.e., the proportion of a prey's range where it is vulnerable to predation",
+        "by a given predator."
+      )
+    } else {
+      paste(
+        "The AB ratio measures predator production that can be attributed to spatial overlap with prey,",
+        "assuming a Type-I functional response. This metric is not 0-1 bounded."
+      )
+    }
+  )
+  
   output$overlap_math1 <- renderUI(
     if(input$index == "Probability of occurrence") {
-      withMathJax("$$A_{x, y} / A_{\\text{total}}$$")
+      withMathJax("$$A_{pred, prey} / A_{total}$$")
     } else {
-      withMathJax("$$\\frac{\\sum p_xp_y}{\\sum p_x^2 \\sum p_y^2}$$")
+      withMathJax("$$\\frac{\\sum p_{pred}p_{prey}}{\\sum p_{pred}^2 \\sum p_{prey}^2}$$")
+    }
+  )
+  
+  output$overlap_math2 <- renderUI(
+    if(input$index == "Probability of occurrence") {
+      withMathJax("$$A_{pred, prey} / A_{prey}$$")
+    } else {
+      withMathJax("$$\\frac{1}{n} \\sum \\left( \\frac{(pred - \\bar{pred})(prey - \\bar{prey})}{\\bar{pred} \times \\bar{prey}} \\right)$$")
     }
   )
   
@@ -476,6 +525,16 @@ server <- function(input, output) {
   output$overlap_plot2 <- renderPlot(
     
     if (input$index == "Probability of occurrence") {
+      plot_overlap(plot_data(), "range_overlap", "range overlap", c("hindcast", sims()))
+    } else {
+      plot_overlap(plot_data(), "AB_overlap", "AB ratio", c("hindcast", sims()), responsive_y = FALSE)
+    }
+    
+  )
+  
+  output$overlap_plot3 <- renderPlot(
+    
+    if (input$index == "Probability of occurrence") {
       plot_overlap(plot_data(), "bhattacharyya_encounter", "Bhattacharyya's coefficient", c("hindcast", sims()))
     } else {
       plot_overlap(plot_data(), "bhattacharyya", "Bhattacharyya's coefficient", c("hindcast", sims()))
@@ -483,7 +542,7 @@ server <- function(input, output) {
     
   )
   
-  output$overlap_plot3 <- renderPlot(
+  output$overlap_plot4 <- renderPlot(
     
     if (input$index == "Probability of occurrence") {
       plot_overlap(plot_data(), "gbl_colloc_encounter", "global index of collocation", c("hindcast", sims()))
@@ -494,8 +553,8 @@ server <- function(input, output) {
   )
   
   # Directories containing output for each species
-  sp1_dir <- reactive(paste0("output/", gsub(" ", "_", input$sp1), ifelse(input$bin1 == "all", "", paste0("-", input$bin1))))
-  sp2_dir <-  reactive(paste0("output/", paste0(gsub(" ", "_", input$sp2), ifelse(input$bin2 == "all", "", paste0("-", input$bin2)))))
+  sp1_dir <- reactive(paste0("output/", gsub(" ", "_", gsub(" (adult)", "", input$pred, fixed = TRUE)), "-adult"))
+  sp2_dir <- reactive(paste0("output/", paste0(gsub(" ", "_", gsub(" (juv.)", "", gsub(" (all)", "", input$prey, fixed = TRUE), fixed = TRUE)), ifelse(grepl("crab", input$prey), "", "-juvenile"))))
   
   # Range summary files #new
   sp1_summary <- reactive({
@@ -891,7 +950,7 @@ server <- function(input, output) {
   
   output$downloadOverlap <- downloadHandler(
     filename = function() {
-      paste0(paste('overlap', gsub(" ", "_", input$sp1), input$bin1, gsub(" ", "_", input$sp2), input$bin2, sep = "-"), ".csv")
+      paste0(paste('overlap', gsub(" ", "_", input$pred), input$pred_bin, gsub(" ", "_", input$prey), input$prey_bin, sep = "-"), ".csv")
     },
     content = function(con) {
       write.csv(plot_data(), con, row.names = FALSE)
@@ -900,7 +959,7 @@ server <- function(input, output) {
   
   output$downloadSp1 <- downloadHandler(
     filename = function() {
-      paste0(paste(gsub(" ", "_", input$sp1), input$bin1, sep = "-"), ".csv")
+      paste0(paste(gsub(" ", "_", input$pred), input$pred_bin, sep = "-"), ".csv")
     },
     content = function(con) {
       write.csv(sp1_summary(), con, row.names = FALSE)
@@ -909,7 +968,7 @@ server <- function(input, output) {
   
   output$downloadSp2 <- downloadHandler(
     filename = function() {
-      paste0(paste(gsub(" ", "_", input$sp2), input$bin2, sep = "-"), ".csv")
+      paste0(paste(gsub(" ", "_", input$prey), input$prey_bin, sep = "-"), ".csv")
     },
     content = function(con) {
       write.csv(sp2_summary(), con, row.names = FALSE)
