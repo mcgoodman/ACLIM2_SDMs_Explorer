@@ -105,11 +105,17 @@ ui <- fluidPage(
   
   theme = shinytheme("flatly"),
   
+  # ACE Header
+  includeHTML("shinyheader.html"),
+  
   # Application title
-  titlePanel("ACLIM2 SDMs: Species range and overlap forecasts"),
+  #titlePanel("ACLIM2 SDMs: Species range and overlap forecasts"),
   
   # Left align LaTeX math
   tags$head(
+    
+    tags$link(rel = "stylesheet", type = "text/css", href = "shiny-custom.css"),
+    
     tags$style(HTML("
                     div.MathJax_Display{
                     text-align: left !important;

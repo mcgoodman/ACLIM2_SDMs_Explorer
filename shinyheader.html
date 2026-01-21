@@ -1,0 +1,47 @@
+<!-- Navbar -->
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation" aria-label="Main Navigation Bar" style="min-height: 65px;">
+  
+  <style>
+    body { padding-top: 85px !important; }
+    
+    /* Default: Hide mobile text, show desktop text */
+    .brand-text-mobile { display: none; }
+    .brand-text-desktop { display: inline; }
+
+    /* MEDIA QUERY: On screens smaller than 768px (standard mobile width) */
+    @media (max-width: 767px) {
+      .brand-text-desktop { display: none; }  /* Hide long text */
+      .brand-text-mobile { display: inline; } /* Show short text */
+    }
+    
+  </style>
+  
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <!-- Brand -->
+      <a class="navbar-brand" 
+        href="https://apex.psmfc.org/akfindev/r/akfin/ace/home"
+        style="padding: 0px 15px; display: flex; align-items: center; height: 70px;" 
+        >
+        <img src="images/ace_logo.png" alt="ACE Logo"
+             class="brand-image-header"
+             style="height: 60px; width: 60px; display: inline-block; margin-right: 10px; border: 2px solid #ffffff; border-radius: 50%;"
+             >
+        <img src="images/aclim_logo.png" alt="ACLIM Logo"
+             class="brand-image-header"
+             style="height: 60px; width: 60px; display: inline-block; margin-right: 20px; border: 2px solid #ffffff; border-radius: 50%;"
+             >
+             
+        <span class="brand-text-desktop" style="font-size: 25px;">
+            ACLIM2 SDMs: Species range and overlap forecasts
+          </span>
+
+          <span class="brand-text-mobile" style="font-size: 25px;">
+            ACLIM2 SDMs
+          </span>
+          
+      </a>
+    </div>
+  </div>
+</nav>
