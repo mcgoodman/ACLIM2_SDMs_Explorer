@@ -182,75 +182,43 @@ ui <- fluidPage(
         justified = TRUE
       ), 
       h5(HTML("<b>Download output<b>")),
-      helpText("Contact Maurice Goodman (goodman.maurice@gmail.com) for other outputs"),
-      fluidRow(
-        column(4, downloadButton('downloadOverlap', 'Overlap', style = "width:100%;")), 
+      fluidRow( 
         column(4, downloadButton('downloadSp1', 'Predator', style = "width:100%;")), 
-        column(4, downloadButton('downloadSp2', 'Prey', style = "width:100%;"))
-      )
+        column(4, downloadButton('downloadSp2', 'Prey', style = "width:100%;")), 
+        column(4, downloadButton('downloadOverlap', 'Overlap', style = "width:100%;"))
+      ), 
+      div(style = "height: 20px;"),
+      helpText(
+        p("Prepared by Maurice Goodman (maurice.goodman@noaa.gov)"),
+        p("Based on outputs from", a("Goodman et al. (2025)", href = "https://doi.org/10.1111/faf.12875")),
+        p("Contact authors for additional outputs")
+        )
     ),
     
     # Show a plot of the generated distribution
     mainPanel(
       tabsetPanel(
-        tabPanel("Predator-prey overlap", style = "background-color: #ffffff;", fluidPage(
-          h2("Background"),
-          p(paste(
-            "This interface displays fitted means and confidence intervals from SDMs built for a suite", 
-            "of eastern Bering Sea groundfish and crab species as part of the ACLIM2 project.",
-            "Generalized additive models (GAMs) were built for each species with environmental covariates",
-            "selected using time-series cross validation (i.e., by optimizing several-year-ahead predictive",
-            "performance). Terms considered in the models include temperature, oxygen, pH, depth, sediment grain size, and",
-            "spatially-varying effects of the cold pool. Models were fit separately for juveniles and adults",
-            "for most species, but not for snow crabs, and red king crab. We fit models for both probability of occurrence",
-            "(using a binomial likelihood) and biomass (using a Tweedie likelihood), and weighted multiple competing models",
-            "for each species and life stage to produce an optimal ensemble based on minimizing predictive error.",
-            "Overlap projections are plotted below, with model summaries and range projections for individual",
-            "species available in tabs to the right."
-          )),
-          p(paste(
-            "Overlap metrics can be computed from either probability of occurrence (in which case predictions from the binomial",
-            "models are used) or expected biomass (from the Tweedie models). The overlap indices computed from these products", 
-            "differ: see below for descriptions."
-          )),
-          p(paste(
-            "Note: All aggregate statistics (ensembles, decadal means, smoothers) are computed in an ad-hoc way", 
-            "for visualization purposes only."   
-          )),
-          h2("Spatial overlap"),
-          p(textOutput("overlap_background")),
-          h4(textOutput("overlap_title1")),
-          uiOutput("overlap_math1"),
-          p(textOutput("overlap_description1")),
-          fluidPage(
-            fluidRow(
-              div(
-                shinyWidgets::materialSwitch("y_axis", "Y-axis: 0-1", value = FALSE, right = TRUE, inline = TRUE), 
-                style = "position: absolute; right: 0; padding: 1% 2%; z-index: 1;"
-              )), 
-            plotOutput("overlap_plot1")
-          ),
-          h4(textOutput("overlap_title2")), 
-          uiOutput("overlap_math2"),
-          p(textOutput("overlap_description2")), 
-          plotOutput("overlap_plot2"),
-          h4("Bhattacharyya's coefficient"),
-          withMathJax("$$\\sum \\sqrt{p_{prey} p_{pred}}$$"),
-          p(paste(
-            "Bhattacharyya's coefficient is a metric of similarity in the fine-scale spatial distributions",
-            "of two species:"
-          )),
-          plotOutput("overlap_plot3"),
-          h4("Global index of collocation"),
-          withMathJax("$$\\frac{1 - \\Delta CG_{prey, pred}^2}{\\Delta CG_{prey, pred}^2 + I_{prey} + I_{pred}}$$"), 
-          p(paste(
-            "The global index of collocation is a measure of broad-scale geographic similarity in two species",
-            "distributions, as a function of each species center of gravity (CG) and dispersion (I):"
-          )),
-          plotOutput("overlap_plot4"),
-          p("Overlap formulas and definitions following Carroll et al. (2019).")
-        )), 
         tabPanel("Predator distribution", style = "background-color: #ffffff;", fluidPage(
+          h2("Background"),
+          p(
+              "This interface displays fitted means and confidence intervals from SDMs built for a suite", 
+              "of eastern Bering Sea groundfish and crab species as part of the ACLIM2 project.",
+              "Generalized additive models (GAMs) were built for each species with different combinations of", 
+              "environmental covariates, and the resulting set of models were combined into a weighted ensemble, with",
+              "models weighted to minimize the predictive error of the ensemble.",
+              "Terms considered in the models include temperature, oxygen, pH, depth, sediment grain size, and",
+              "spatially-varying effects of the cold pool. Models for groundfish were fit separately for juveniles and adults",
+              "We fit models for both probability of occurrence (using a binomial likelihood) and biomass (using a Tweedie likelihood).",
+              "See"
+            , 
+            a("Goodman et al. (2025)", href = "https://doi.org/10.1111/faf.12875"), 
+            "for details on model implementation."
+          ),
+          p(paste(
+            "Select two species using the 'predator' and 'prey' drop downs on the sidebar. Model estimates and",
+            "projections are displayed for the chosen predator below, with prey distribution and predator-prey overlap",
+            "estimates available in the tabs to the right."
+          )),
           h2("Covariate effects"),
           p(description$models),
           plotOutput("sp1_smooths"),
@@ -297,6 +265,49 @@ ui <- fluidPage(
           h3("Projected distribution"),
           p(description$proj_map),
           imageOutput("sp2_proj_map", height = "100%")
+        )),
+        tabPanel("Predator-prey overlap", style = "background-color: #ffffff;", fluidPage(
+          h2("Spatial overlap"),
+          p(paste(
+            "Overlap metrics can be computed from either probability of occurrence (in which case predictions from the binomial",
+            "models are used) or expected biomass (from the Tweedie models). The overlap indices computed from these products", 
+            "differ: see below for descriptions."
+          )),
+          p(paste(
+            "Note: All aggregate statistics (ensembles, decadal means, smoothers) are computed in an ad-hoc way", 
+            "for visualization purposes only."   
+          )),
+          p(textOutput("overlap_background")),
+          h4(textOutput("overlap_title1")),
+          uiOutput("overlap_math1"),
+          p(textOutput("overlap_description1")),
+          fluidPage(
+            fluidRow(
+              div(
+                shinyWidgets::materialSwitch("y_axis", "Y-axis: 0-1", value = FALSE, right = TRUE, inline = TRUE), 
+                style = "position: absolute; right: 0; padding: 1% 2%; z-index: 1;"
+              )), 
+            plotOutput("overlap_plot1")
+          ),
+          h4(textOutput("overlap_title2")), 
+          uiOutput("overlap_math2"),
+          p(textOutput("overlap_description2")), 
+          plotOutput("overlap_plot2"),
+          h4("Bhattacharyya's coefficient"),
+          withMathJax("$$\\sum \\sqrt{p_{prey} p_{pred}}$$"),
+          p(paste(
+            "Bhattacharyya's coefficient is a metric of similarity in the fine-scale spatial distributions",
+            "of two species:"
+          )),
+          plotOutput("overlap_plot3"),
+          h4("Global index of collocation"),
+          withMathJax("$$\\frac{1 - \\Delta CG_{prey, pred}^2}{\\Delta CG_{prey, pred}^2 + I_{prey} + I_{pred}}$$"), 
+          p(paste(
+            "The global index of collocation is a measure of broad-scale geographic similarity in two species",
+            "distributions, as a function of each species center of gravity (CG) and dispersion (I):"
+          )),
+          plotOutput("overlap_plot4"),
+          p("Overlap formulas and definitions following Carroll et al. (2019).")
         ))
       )
     )
