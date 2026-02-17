@@ -1,0 +1,23 @@
+Package: aclim2_sdms_explorer
+Type: Shiny
+Title: ACLIM2 Species Distribution Models
+Version: 1.0.0
+Authors@R: 
+    c(
+      person("Maurice", "Goodman", 
+             email = "maurice.goodman@noaa.gov", 
+             role = c("aut", "cre"))
+    )
+Description: Model-based projections of species distributions and predator-prey spatial overlap for eastern Bering Sea groundfish and crabs based on climate models
+Imports:
+  shiny, 
+  shinythemes,
+  shinyWidgets,
+  rsconnect,
+  here,
+  dplyr,
+  ggplot2,
+  stringr,
+  RColorBrewer,
+  PNWColors
+  
