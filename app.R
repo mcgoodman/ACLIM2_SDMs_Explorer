@@ -2,6 +2,10 @@
 require("dplyr")
 require("ggplot2")
 require("shinythemes")
+require("shinyWidgets")
+require("stringr")
+require("RColorBrewer")
+require("PNWColors")
 
 ## Read in overlap data, extract species that estimates are available for
 overlap <- read.csv("output/overlap_summary.csv")
