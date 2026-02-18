@@ -19,7 +19,7 @@ rsconnect::connectApiUser(
 # Deploy to NMFS server
 rsconnect::deployApp(
   appDir = ".",
-  appName = "ACLIM2 SDMs Explorer",
+  appName = "aclim2_sdms_explorer_nmfs",
   account = "maurice.goodman",
   server = "nmfspositconnect",
   forceUpdate = TRUE
