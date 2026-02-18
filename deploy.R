@@ -22,7 +22,8 @@ rsconnect::deployApp(
   appDir = ".",
   appName = "aclim2_sdms_explorer_nmfs",
   account = "maurice.goodman", 
-  server = "nmfspositconnect"
+  server = "nmfspositconnect", 
+  forceUpdate = TRUE
 )
 
 # Connect to shinyapps.io
@@ -37,6 +38,7 @@ rsconnect::deployApp(
   appDir = ".", 
   appName = "aclim2_sdms_explorer",
   account = "mgoodman",
-  server = "shinyapps.io"
+  server = "shinyapps.io", 
+  forceUpdate = TRUE
 )
 
