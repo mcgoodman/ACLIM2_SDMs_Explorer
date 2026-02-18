@@ -1,12 +1,11 @@
 
-require("shiny")
-require("here")
 require("dplyr")
 require("ggplot2")
 require("shinythemes")
+require("here")
 
 ## Read in overlap data, extract species that estimates are available for
-overlap <- read.csv("output/overlap_summary.csv")
+overlap <- read.csv(here("output", "overlap_summary.csv"))
 overlap$pred_bin[is.na(overlap$pred_bin)] <- "all"
 overlap$prey_bin[is.na(overlap$prey_bin)] <- "all"
 pred <- unique(overlap$pred)
@@ -570,8 +569,8 @@ server <- function(input, output) {
   )
   
   # Directories containing output for each species
-  sp1_dir <- reactive(paste0("output/", gsub(" ", "_", gsub(" (adult)", "", input$pred, fixed = TRUE)), "-adult"))
-  sp2_dir <- reactive(paste0("output/", paste0(gsub(" ", "_", gsub(" (juv.)", "", gsub(" (all)", "", input$prey, fixed = TRUE), fixed = TRUE)), ifelse(grepl("crab", input$prey), "", "-juvenile"))))
+  sp1_dir <- reactive(here("output", paste0(gsub(" ", "_", gsub(" (adult)", "", input$pred, fixed = TRUE)), "-adult")))
+  sp2_dir <- reactive(here("output", paste0(gsub(" ", "_", gsub(" (juv.)", "", gsub(" (all)", "", input$prey, fixed = TRUE), fixed = TRUE)), ifelse(grepl("crab", input$prey), "", "-juvenile"))))
   
   # Range summary files #new
   sp1_summary <- reactive({

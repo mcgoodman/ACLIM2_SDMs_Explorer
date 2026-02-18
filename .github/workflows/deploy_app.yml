@@ -4,7 +4,7 @@ on:
   push:
 
 jobs:  
-  run_r: 
+  deploy_app: 
     runs-on: ubuntu-latest
     steps:  
     - name: Check out repository  

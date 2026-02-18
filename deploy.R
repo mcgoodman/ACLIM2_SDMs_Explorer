@@ -26,7 +26,7 @@ rsconnect::deployApp(
 )
 
 # Connect to shinyapps.io
-setAccountInfo(
+rsconnect::setAccountInfo(
   name = "mgoodman",
   token = shinyapps.io_api_token,
   secret = shinyapps.io_api_secret
