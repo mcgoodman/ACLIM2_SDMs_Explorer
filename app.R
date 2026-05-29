@@ -111,7 +111,7 @@ ui <- fluidPage(
   includeHTML("shinyheader.html"),
   
   # Application title
-  #titlePanel("ACLIM2 SDMs: Species range and overlap forecasts"),
+  #titlePanel("ACLIM2 SDMs: Species range and overlap projections"),
   
   # Left align LaTeX math
   tags$head(
@@ -363,7 +363,7 @@ server <- function(input, output) {
         annotate("text", x = 2021, y = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])) + 0.025 * ifelse(input$y_axis & responsive_y, 1, (max(data[["X97.5."]]) - min(data[["X2.5."]]))), 
                  label = "hindcast", hjust = 1, vjust = 0, size = 5) +
         annotate("text", x = 2023, y = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])) + 0.025 * ifelse(input$y_axis & responsive_y, 1, (max(data[["X97.5."]]) - min(data[["X2.5."]]))),
-                 label = "forecast", hjust = 0, vjust = 0, size = 5) +
+                 label = "projection", hjust = 0, vjust = 0, size = 5) +
         scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
         scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
         scale_fill_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + {
@@ -389,7 +389,7 @@ server <- function(input, output) {
         annotate("text", x = 2021, y = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])) + 0.025 * ifelse(input$y_axis & responsive_y, 1, (max(data[["X97.5."]]) - min(data[["X2.5."]]))), 
                  label = "hindcast", hjust = 1, vjust = 0, size = 5) +
         annotate("text", x = 2023, y = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])) + 0.025 * ifelse(input$y_axis & responsive_y, 1, (max(data[["X97.5."]]) - min(data[["X2.5."]]))),
-                 label = "forecast", hjust = 0, vjust = 0, size = 5) +
+                 label = "projection", hjust = 0, vjust = 0, size = 5) +
         scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
         scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
         scale_fill_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + {
@@ -413,7 +413,7 @@ server <- function(input, output) {
         annotate("text", x = 2021, y = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])) + 0.025 * ifelse(input$y_axis & responsive_y, 1, (max(data[["X97.5."]]) - min(data[["X2.5."]]))), 
                  label = "hindcast", hjust = 1, vjust = 0, size = 5) +
         annotate("text", x = 2023, y = ifelse(input$y_axis & responsive_y, 0, min(data[["X2.5."]])) + 0.025 * ifelse(input$y_axis & responsive_y, 1, (max(data[["X97.5."]]) - min(data[["X2.5."]]))),
-                 label = "forecast", hjust = 0, vjust = 0, size = 5) +
+                 label = "projection", hjust = 0, vjust = 0, size = 5) +
         scale_x_continuous(breaks = seq(1970, 2100, 10)) + 
         scale_color_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + 
         scale_fill_manual(values = plot_cols, labels = function(x) stringr::str_pad(x, 12, "right")) + {
