@@ -19,5 +19,7 @@ Imports:
   ggplot2,
   stringr,
   RColorBrewer,
-  PNWColors
+  PNWColors,
+  cpp11
+
   
